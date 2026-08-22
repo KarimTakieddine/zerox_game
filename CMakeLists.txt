@@ -14,9 +14,13 @@ list(APPEND SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
+find_package(glm 1.0 REQUIRED)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
     "${MEMORY_READER_DIR}/${INCLUDE_DIR}")
+
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
 if (WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}
