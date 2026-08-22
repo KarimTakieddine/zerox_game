@@ -9,7 +9,10 @@ namespace ZeroXGame
 {
     struct GameMemory
     {
-        std::span<GameEntity> gameEntities;
+        std::span<GameEntity> players;
+        std::span<GameEntity> enemies;
+        std::span<GameEntity> obstacles;
+        std::span<GameEntity> backgrounds;
     };
 
     inline GameMemory readGameMemory(GameAllocator* allocator)
@@ -21,9 +24,9 @@ namespace ZeroXGame
 
         MemoryCursor<GAME_MEMORY_ALIGNMENT> gameMemoryCursor;
         
-        result.gameEntities = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
+        result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
 
-        gameMemoryCursor.step_array<GameEntity>(result.gameEntities.size());
+        gameMemoryCursor.step_array<GameEntity>(result.players.size());
         
         return result;
     }
