@@ -4,6 +4,7 @@
 #include <memory_cursor.hpp>
 
 #include "zerox_game.h"
+#include "zerox_game_entity.h"
 
 namespace ZeroXGame
 {
