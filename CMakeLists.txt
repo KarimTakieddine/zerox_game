@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20 REQUIRED)
 set(PROJECT_NAME zerox_game)
 set(INCLUDE_DIR include)
 set(SRC_DIR src)
+set(MEMORY_READER_DIR memory_reader)
 
 Project(${PROJECT_NAME})
 
@@ -15,7 +16,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
-    "../${INCLUDE_DIR}")
+    "${MEMORY_READER_DIR}/${INCLUDE_DIR}")
 
 if (WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}
