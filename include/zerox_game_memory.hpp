@@ -28,6 +28,10 @@ namespace ZeroXGame
         result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
 
         gameMemoryCursor.step_array<GameEntity>(result.players.size());
+
+        result.enemies = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
+
+        gameMemoryCursor.step_array<GameEntity>(result.enemies.size());
         
         return result;
     }
