@@ -29,8 +29,6 @@ namespace ZeroXGame
 
     void updateGame(GameAllocator* allocator, double deltaTime)
     {
-        std::cout << deltaTime << std::endl;
-
         GameMemory gameMemory = readGameMemory(allocator);
         
         const auto players = gameMemory.players;
