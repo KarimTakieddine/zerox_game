@@ -13,5 +13,5 @@ namespace ZeroXGame
     using GameAllocator = BumpAllocator<GAME_MEMORY_ALIGNMENT>;
 
     extern "C" ZEROX_GAME_API bool initializeGame(GameAllocator* allocator);
-	extern "C" ZEROX_GAME_API void updateGame(GameAllocator* allocator);
+	extern "C" ZEROX_GAME_API void updateGame(GameAllocator* allocator, double deltaTime);
 }

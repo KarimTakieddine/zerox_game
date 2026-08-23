@@ -27,8 +27,26 @@ namespace ZeroXGame
         return true;
     }
 
-    void updateGame(GameAllocator* allocator)
+    void updateGame(GameAllocator* allocator, double deltaTime)
     {
+        std::cout << deltaTime << std::endl;
+
         GameMemory gameMemory = readGameMemory(allocator);
+        
+        const auto players = gameMemory.players;
+        for (size_t i = 0; i < players.size(); ++i)
+        {
+            auto* player = players.data() + i;
+
+            player->transform.localToWorld[3].x -= 0.35f * deltaTime;
+        }
+
+        const auto enemies = gameMemory.enemies;
+        for (size_t i = 0; i < enemies.size(); ++i)
+        {
+            auto* enemy = enemies.data() + i;
+
+            enemy->transform.localToWorld[3].x += (i + 1) * 0.25f * deltaTime;
+        }
     }
 }
