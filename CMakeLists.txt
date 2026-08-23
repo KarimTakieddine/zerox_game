@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD 20 REQUIRED)
 set(PROJECT_NAME zerox_game)
 set(INCLUDE_DIR include)
 set(SRC_DIR src)
-set(MEMORY_READER_DIR memory_reader)
+
+if (NOT DEFINED MEMORY_READER_DIR)
+    set(MEMORY_READER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../zerox_engine/memory_reader")
+endif()
 
 Project(${PROJECT_NAME})
 
@@ -20,7 +23,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
     "${MEMORY_READER_DIR}/${INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm)
 
 if (WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}
