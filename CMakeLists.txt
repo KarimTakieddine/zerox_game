@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.3.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 4.3.1 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD 20 REQUIRED)
 
@@ -17,7 +17,11 @@ list(APPEND SOURCES
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-find_package(glm 1.0 REQUIRED)
+if(WIN32)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/glm)
+elseif(LINUX)
+    find_package(glm 1.0 REQUIRED)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
