@@ -16,9 +16,11 @@ namespace ZeroXGame
         std::span<GameEntity> enemies;
         std::span<GameEntity> obstacles;
         std::span<GameEntity> backgrounds;
+        std::span<uint64_t> entitySectionCount;
+        std::span<std::byte> entitySectionSpan;
     };
 
-    inline GameMemory readGameMemory(GameAllocator* allocator)
+    inline GameMemory readGameMemory(const GameAllocator* allocator)
     {
         GameMemory result;
 
@@ -38,6 +40,15 @@ namespace ZeroXGame
         result.enemies = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
 
         gameMemoryCursor.step_array<GameEntity>(result.enemies.size());
+
+        result.entitySectionCount = gameMemoryView.read_object<uint64_t>(gameMemoryCursor.getOffset());
+
+        gameMemoryCursor.step<uint64_t>();
+
+        const size_t sectionSpanOffset  = gameMemoryCursor.getOffset();
+        result.entitySectionSpan        = gameMemorySpan.subspan(
+            sectionSpanOffset,
+            gameMemorySpan.size() - sectionSpanOffset);
         
         return result;
     }

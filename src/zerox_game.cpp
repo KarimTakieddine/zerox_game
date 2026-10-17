@@ -2,19 +2,14 @@
 #include "zerox_game_entity.h"
 #include "zerox_game_memory.hpp"
 
-#include <iostream>
-
 namespace ZeroXGame
 {
     bool initializeGame(GameAllocator* allocator)
     {
         if (!allocator)
         {
-            std::cout << "No allocator supplied to game library" << std::endl;
             return false;
         }
-
-        std::cout << "Game library successfully loaded. Initializing game memory..." << std::endl;
 
         const size_t playerCount{ 1 };
         allocator->requestMemory<uint64_t>(playerCount);
@@ -23,6 +18,46 @@ namespace ZeroXGame
         const size_t enemyCount{ 4 };
         allocator->requestMemory<uint64_t>(enemyCount);
         allocator->requestMemoryArray<GameEntity>(enemyCount);
+
+        const size_t spriteCount = playerCount + enemyCount;
+        if (spriteCount == 0)
+        {
+            return true;
+        }
+
+        auto* entitySectionCount    = allocator->requestMemory<uint64_t>();
+        *entitySectionCount         = 1;
+
+        auto* spriteEntitySection = allocator->requestMemory<ZeroX::EntitySection>(ZeroX::EntitySection{ .type = ZeroX::EntitySectionType::SPRITE });
+
+        auto* spriteFetchDescriptors = allocator->requestMemoryArray<ZeroX::EntityFetchDescriptor>(spriteCount);
+
+        MemoryCursor<16> entityCursor(sizeof(ZeroX::Input));
+
+        entityCursor.step<uint64_t>();
+        for (size_t i = 0; i < playerCount; ++i)
+        {
+            *(spriteFetchDescriptors + i) = {
+                .stride = 0,
+                .offset = entityCursor.getOffset()
+            };
+
+            entityCursor.step<GameEntity>();
+        }
+
+        entityCursor.step<uint64_t>();
+        for (size_t i = 0; i < enemyCount; ++i)
+        {
+            *(spriteFetchDescriptors + playerCount + i) = {
+                .stride = 0,
+                .offset = entityCursor.getOffset()
+            };
+
+            entityCursor.step<GameEntity>();
+        }
+
+        spriteEntitySection->fetchDescriptors   = spriteFetchDescriptors;
+        spriteEntitySection->descriptorCount    = spriteCount;
 
         return true;
     }
@@ -49,5 +84,24 @@ namespace ZeroXGame
             enemy->material.uvScale             = { 0.0625f, 0.0625f };
             enemy->material.textureOffset       = { 0.0f, 0.0625f };
         }
+    }
+
+    ZeroX::RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator)
+    {
+        ZeroX::RenderDescriptor result = { };
+
+        GameMemory gameMemory = readGameMemory(allocator);
+        
+        const size_t entitySectionCount = *( gameMemory.entitySectionCount.data() );
+
+        if (entitySectionCount == 0)
+        {
+            return result;
+        }
+
+        result.sectionCount         = entitySectionCount;
+        result.entitySectionData    = gameMemory.entitySectionSpan.data();
+
+        return result;
     }
 }
