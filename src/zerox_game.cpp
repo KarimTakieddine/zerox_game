@@ -13,11 +13,24 @@ namespace ZeroXGame
 
         const size_t playerCount{ 1 };
         allocator->requestMemory<uint64_t>(playerCount);
-        allocator->requestMemoryArray<GameEntity>(playerCount);
+        auto* players = allocator->requestMemoryArray<GameEntity>(playerCount);
+
+        for (size_t i = 0; i < playerCount; ++i)
+        {
+            (players + i)->material.uvScale = { 0.0625f, 0.0625f };
+        }
 
         const size_t enemyCount{ 4 };
         allocator->requestMemory<uint64_t>(enemyCount);
-        allocator->requestMemoryArray<GameEntity>(enemyCount);
+        auto* enemies = allocator->requestMemoryArray<GameEntity>(enemyCount);
+
+        for (size_t i = 0; i < enemyCount; ++i)
+        {
+            auto* enemy = enemies + i;
+
+            enemy->material.uvScale         = { 0.0625f, 0.0625f };
+            enemy->material.textureOffset   = { 0.0f, 0.0625f };
+        }
 
         const size_t spriteCount = playerCount + enemyCount;
         if (spriteCount == 0)
@@ -28,7 +41,9 @@ namespace ZeroXGame
         auto* entitySectionCount    = allocator->requestMemory<uint64_t>();
         *entitySectionCount         = 1;
 
-        auto* spriteEntitySection = allocator->requestMemory<ZeroX::EntitySection>(ZeroX::EntitySection{ .type = ZeroX::EntitySectionType::SPRITE });
+        auto* spriteEntitySection = allocator->requestMemory<ZeroX::EntitySection>(ZeroX::EntitySection{
+            .type   = ZeroX::EntitySectionType::SPRITE,
+            .flags  = ZeroX::EntitySectionFlags::ALLOCATE_BATCH | ZeroX::EntitySectionFlags::SET_VERTEX_LAYOUT });
 
         auto* spriteFetchDescriptors = allocator->requestMemoryArray<ZeroX::EntityFetchDescriptor>(spriteCount);
 
@@ -72,7 +87,6 @@ namespace ZeroXGame
             auto* player = players.data() + i;
 
             player->transform.localToWorld[3].x -= 0.35f * deltaTime;
-            player->material.uvScale            = { 0.0625f, 0.0625f };
         }
 
         const auto enemies = gameMemory.enemies;
@@ -81,8 +95,6 @@ namespace ZeroXGame
             auto* enemy = enemies.data() + i;
 
             enemy->transform.localToWorld[3].x -= (i + 1) * 0.25f * deltaTime;
-            enemy->material.uvScale             = { 0.0625f, 0.0625f };
-            enemy->material.textureOffset       = { 0.0f, 0.0625f };
         }
     }
 
