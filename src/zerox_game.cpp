@@ -45,7 +45,7 @@ namespace ZeroXGame
         {
             auto* enemy = enemies.data() + i;
 
-            enemy->transform.localToWorld[3].x += (i + 1) * 0.25f * deltaTime;
+            enemy->transform.localToWorld[3].x -= (i + 1) * 0.25f * deltaTime;
             enemy->material.uvScale             = { 0.0625f, 0.0625f };
             enemy->material.textureOffset       = { 0.0f, 0.0625f };
         }

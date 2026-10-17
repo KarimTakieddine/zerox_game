@@ -5,9 +5,10 @@ set(CMAKE_CXX_STANDARD 20 REQUIRED)
 set(PROJECT_NAME zerox_game)
 set(INCLUDE_DIR include)
 set(SRC_DIR src)
+set(ENGINE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../zerox_engine")
 
 if (NOT DEFINED MEMORY_READER_DIR)
-    set(MEMORY_READER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../zerox_engine/memory_reader")
+    set(MEMORY_READER_DIR "${ENGINE_DIR}/memory_reader")
 endif()
 
 Project(${PROJECT_NAME})
@@ -25,11 +26,14 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
+    "${ENGINE_DIR}/${INCLUDE_DIR}"
     "${MEMORY_READER_DIR}/${INCLUDE_DIR}")
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm)
 
 if (WIN32)
+    target_link_options(${PROJECT_NAME} PRIVATE /PDBALTPATH:airful_dummy_pdb.pdb)
+
     add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE_NAME:${PROJECT_NAME}> "${CMAKE_BINARY_DIR}/${PROJECT_NAME}_dummy.pdb"
