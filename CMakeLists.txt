@@ -24,12 +24,14 @@ elseif(LINUX)
     find_package(glm 1.0 REQUIRED)
 endif()
 
+set(zerox_memory_bridge_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../zerox_memory_bridge/install/share/cmake/zerox_memory_bridge")
+find_package(zerox_memory_bridge CONFIG REQUIRED)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDE_DIR}
-    "${ENGINE_DIR}/${INCLUDE_DIR}"
     "${MEMORY_READER_DIR}/${INCLUDE_DIR}")
 
-target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm)
+target_link_libraries(${PROJECT_NAME} PUBLIC glm::glm zerox_memory_bridge::zerox_memory_bridge)
 
 if (WIN32)
     target_link_options(${PROJECT_NAME} PRIVATE /PDBALTPATH:zerox_game_dummy.pdb)

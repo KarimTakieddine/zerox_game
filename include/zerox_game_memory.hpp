@@ -2,7 +2,7 @@
 
 #include <memory_view.hpp>
 #include <memory_cursor.hpp>
-#include <zerox_engine_input.h>
+#include <zerox_input.h>
 
 #include "zerox_game.h"
 #include "zerox_game_entity.h"
@@ -11,7 +11,7 @@ namespace ZeroXGame
 {
     struct GameMemory
     {
-        std::span<ZeroX::Input> input;
+        std::span<ZeroXBridge::Input> input;
         std::span<GameEntity> players;
         std::span<GameEntity> enemies;
         std::span<GameEntity> obstacles;
@@ -29,9 +29,9 @@ namespace ZeroXGame
 
         MemoryCursor<GAME_MEMORY_ALIGNMENT> gameMemoryCursor;
 
-        result.input = gameMemoryView.read_object<ZeroX::Input>(gameMemoryCursor.getOffset());
+        result.input = gameMemoryView.read_object<ZeroXBridge::Input>(gameMemoryCursor.getOffset());
 
-        gameMemoryCursor.step<ZeroX::Input>();
+        gameMemoryCursor.step<ZeroXBridge::Input>();
         
         result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
 

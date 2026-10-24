@@ -1,9 +1,17 @@
+#include <zerox_render_descriptor.h>
+
 #include "zerox_game.h"
 #include "zerox_game_entity.h"
 #include "zerox_game_memory.hpp"
 
 namespace ZeroXGame
 {
+    using ZeroXBridge::EntitySection;
+    using ZeroXBridge::EntitySectionType;
+    using ZeroXBridge::EntitySectionFlags;
+    using ZeroXBridge::EntityReadDescriptor;
+    using ZeroXBridge::RenderDescriptor;
+
     bool initializeGame(GameAllocator* allocator)
     {
         if (!allocator)
@@ -41,21 +49,18 @@ namespace ZeroXGame
         auto* entitySectionCount    = allocator->requestMemory<uint64_t>();
         *entitySectionCount         = 1;
 
-        auto* spriteEntitySection = allocator->requestMemory<ZeroX::EntitySection>(ZeroX::EntitySection{
-            .type   = ZeroX::EntitySectionType::SPRITE,
-            .flags  = ZeroX::EntitySectionFlags::ALLOCATE_BATCH | ZeroX::EntitySectionFlags::SET_VERTEX_LAYOUT });
+        auto* spriteEntitySection = allocator->requestMemory<EntitySection>(EntitySection{
+            .type   = EntitySectionType::SPRITE,
+            .flags  = EntitySectionFlags::ALLOCATE_BATCH | EntitySectionFlags::SET_VERTEX_LAYOUT });
 
-        auto* spriteFetchDescriptors = allocator->requestMemoryArray<ZeroX::EntityFetchDescriptor>(spriteCount);
+        auto* spriteReadDescriptors = allocator->requestMemoryArray<EntityReadDescriptor>(spriteCount);
 
-        MemoryCursor<16> entityCursor(sizeof(ZeroX::Input));
+        MemoryCursor<16> entityCursor(sizeof(ZeroXBridge::Input));
 
         entityCursor.step<uint64_t>();
         for (size_t i = 0; i < playerCount; ++i)
         {
-            *(spriteFetchDescriptors + i) = {
-                .stride = 0,
-                .offset = entityCursor.getOffset()
-            };
+            *(spriteReadDescriptors + i) = { .start = entityCursor.getOffset() };
 
             entityCursor.step<GameEntity>();
         }
@@ -63,15 +68,12 @@ namespace ZeroXGame
         entityCursor.step<uint64_t>();
         for (size_t i = 0; i < enemyCount; ++i)
         {
-            *(spriteFetchDescriptors + playerCount + i) = {
-                .stride = 0,
-                .offset = entityCursor.getOffset()
-            };
+            *(spriteReadDescriptors + playerCount + i) = { .start = entityCursor.getOffset() };
 
             entityCursor.step<GameEntity>();
         }
 
-        spriteEntitySection->fetchDescriptors   = spriteFetchDescriptors;
+        spriteEntitySection->readDescriptors    = spriteReadDescriptors;
         spriteEntitySection->descriptorCount    = spriteCount;
 
         return true;
@@ -86,7 +88,7 @@ namespace ZeroXGame
         {
             auto* player = players.data() + i;
 
-            player->transform.localToWorld[3].x -= 0.35f * deltaTime;
+            player->transform.localToWorld[3].x += 0.35f * deltaTime;
         }
 
         const auto enemies = gameMemory.enemies;
@@ -94,26 +96,24 @@ namespace ZeroXGame
         {
             auto* enemy = enemies.data() + i;
 
-            enemy->transform.localToWorld[3].x -= (i + 1) * 0.25f * deltaTime;
+            enemy->transform.localToWorld[3].x += (i + 1) * 0.25f * deltaTime;
         }
     }
 
-    ZeroX::RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator)
+    RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator)
     {
-        ZeroX::RenderDescriptor result = { };
-
         GameMemory gameMemory = readGameMemory(allocator);
         
         const size_t entitySectionCount = *( gameMemory.entitySectionCount.data() );
 
         if (entitySectionCount == 0)
         {
-            return result;
+            return { };
         }
 
-        result.sectionCount         = entitySectionCount;
-        result.entitySectionData    = gameMemory.entitySectionSpan.data();
-
-        return result;
+        return {
+            .entitySections     = reinterpret_cast<EntitySection*>(gameMemory.entitySectionSpan.data()),
+            .entitySectionCount = entitySectionCount
+        };
     }
 }

@@ -12,8 +12,9 @@ namespace ZeroXGame
     constexpr size_t GAME_MEMORY_ALIGNMENT = 16;
 
     using GameAllocator = BumpAllocator<GAME_MEMORY_ALIGNMENT>;
+    using ZeroXBridge::RenderDescriptor;
 
     extern "C" ZEROX_GAME_API bool initializeGame(GameAllocator* allocator);
 	extern "C" ZEROX_GAME_API void updateGame(GameAllocator* allocator, double deltaTime);
-    extern "C" ZEROX_GAME_API ZeroX::RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator);
+    extern "C" ZEROX_GAME_API RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator);
 }
