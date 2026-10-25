@@ -5,17 +5,18 @@
 #include <zerox_input.h>
 
 #include "zerox_game.h"
-#include "zerox_game_entity.h"
+#include "zerox_game_collider.h"
 
 namespace ZeroXGame
 {
     struct GameMemory
     {
         std::span<ZeroXBridge::Input> input;
+        std::span<GameEntity> backgrounds;
         std::span<GameEntity> players;
         std::span<GameEntity> enemies;
         std::span<GameEntity> obstacles;
-        std::span<GameEntity> backgrounds;
+        std::span<Collider> colliders;
         std::span<uint64_t> entitySectionCount;
         std::span<std::byte> entitySectionSpan;
     };
@@ -30,25 +31,23 @@ namespace ZeroXGame
         MemoryCursor<GAME_MEMORY_ALIGNMENT> gameMemoryCursor;
 
         result.input = gameMemoryView.read_object<ZeroXBridge::Input>(gameMemoryCursor.getOffset());
-
         gameMemoryCursor.step<ZeroXBridge::Input>();
         
         result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
-
         gameMemoryCursor.step_array<GameEntity>(result.players.size());
 
         result.enemies = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
-
         gameMemoryCursor.step_array<GameEntity>(result.enemies.size());
 
-        result.entitySectionCount = gameMemoryView.read_object<uint64_t>(gameMemoryCursor.getOffset());
+        result.colliders = gameMemoryView.read_contiguous_array<Collider>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Collider>(result.colliders.size());
 
+        result.entitySectionCount = gameMemoryView.read_object<uint64_t>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step<uint64_t>();
 
-        const size_t sectionSpanOffset  = gameMemoryCursor.getOffset();
-        result.entitySectionSpan        = gameMemorySpan.subspan(
-            sectionSpanOffset,
-            gameMemorySpan.size() - sectionSpanOffset);
+        result.entitySectionSpan = gameMemorySpan.subspan(
+            gameMemoryCursor.getOffset(),
+            allocator->getLiveSizeInBytes() - gameMemoryCursor.getOffset());
         
         return result;
     }
