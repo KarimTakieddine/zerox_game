@@ -5,7 +5,7 @@
 
 namespace ZeroXGame
 {
-    struct GameEntity
+    struct alignas(16) GameEntity
     {
         Transform transform;
         Material material;
