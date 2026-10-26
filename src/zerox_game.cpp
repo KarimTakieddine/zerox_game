@@ -22,6 +22,15 @@ namespace ZeroXGame
 
         // Allocate game entities
 
+        const size_t backgroundCount{ 2 };
+        allocator->requestMemory<uint64_t>(backgroundCount);
+        auto* backgrounds = allocator->requestMemoryArray<Background>(backgroundCount);
+
+        for (size_t i = 0; i < backgroundCount; ++i)
+        {
+            (backgrounds + i)->layer = static_cast<uint64_t>(i);
+        }
+
         const size_t playerCount{ 1 };
         allocator->requestMemory<uint64_t>(playerCount);
         auto* players = allocator->requestMemoryArray<GameEntity>(playerCount);
@@ -69,6 +78,15 @@ namespace ZeroXGame
 
         auto* entitySectionCount = allocator->requestMemory<uint64_t>(0);
 
+        auto* backgroundEntitySection = allocator->requestMemory<EntitySection>(
+            EntitySection{
+                .type   = EntitySectionType::BACKGROUND,
+                .flags  = EntitySectionFlags::ALLOCATE_BATCH
+            }
+        );
+
+        ++(*entitySectionCount);
+
         const size_t spriteCount    = playerCount + enemyCount;
         auto* spriteEntitySection   = allocator->requestMemory<EntitySection>(EntitySection{
             .type   = EntitySectionType::SPRITE,
@@ -82,12 +100,24 @@ namespace ZeroXGame
 
         ++(*entitySectionCount);
 
+        auto* backgroundReadDescriptors = allocator->requestMemoryArray<EntityReadDescriptor>(backgroundCount);
         auto* spriteReadDescriptors     = allocator->requestMemoryArray<EntityReadDescriptor>(spriteCount);
         auto* colliderReadDescriptors   = allocator->requestMemoryArray<EntityReadDescriptor>(colliderCount);
 
         // Set entity section offsets
 
         MemoryCursor<16> entityCursor(sizeof(ZeroXBridge::Input));
+
+        entityCursor.step<uint64_t>();
+        for (size_t i = 0; i < backgroundCount; ++i)
+        {
+            *(backgroundReadDescriptors + i) = { .start = entityCursor.getOffset() };
+
+            entityCursor.step<Background>();
+        }
+
+        backgroundEntitySection->readDescriptors = backgroundReadDescriptors;
+        backgroundEntitySection->descriptorCount = backgroundCount;
 
         entityCursor.step<uint64_t>();
         for (size_t i = 0; i < playerCount; ++i)
@@ -126,6 +156,12 @@ namespace ZeroXGame
     {
         GameMemory gameMemory = readGameMemory(allocator);
         
+        const auto backgrounds = gameMemory.backgrounds;
+        for (size_t i = 0; i < backgrounds.size(); ++i)
+        {
+            updateBackground(*(backgrounds.data() + i));
+        }
+
         const auto players = gameMemory.players;
         for (size_t i = 0; i < players.size(); ++i)
         {

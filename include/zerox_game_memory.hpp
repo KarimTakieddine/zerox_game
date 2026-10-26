@@ -5,6 +5,7 @@
 #include <zerox_input.h>
 
 #include "zerox_game.h"
+#include "zerox_game_background.h"
 #include "zerox_game_collider.h"
 
 namespace ZeroXGame
@@ -12,7 +13,7 @@ namespace ZeroXGame
     struct GameMemory
     {
         std::span<ZeroXBridge::Input> input;
-        std::span<GameEntity> backgrounds;
+        std::span<Background> backgrounds;
         std::span<GameEntity> players;
         std::span<GameEntity> enemies;
         std::span<GameEntity> obstacles;
@@ -32,6 +33,9 @@ namespace ZeroXGame
 
         result.input = gameMemoryView.read_object<ZeroXBridge::Input>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step<ZeroXBridge::Input>();
+
+        result.backgrounds = gameMemoryView.read_contiguous_array<Background>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Background>(result.backgrounds.size());
         
         result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<GameEntity>(result.players.size());

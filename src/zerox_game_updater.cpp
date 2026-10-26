@@ -4,6 +4,11 @@
 
 namespace ZeroXGame
 {
+	void updateBackground(ZeroXGame::Background& background)
+	{
+		background.entity.transform.localScale = glm::scale(glm::mat4(1.0f), { 33.0f, 16.875f, 1.0f });
+	}
+
 	void updateCollider(ZeroXGame::Collider& collider)
 	{
 		if (!collider.target)
