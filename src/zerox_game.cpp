@@ -154,6 +154,8 @@ namespace ZeroXGame
 
     void updateGame(GameAllocator* allocator, double deltaTime)
     {
+        static double physicsAccumulator{ 0.0 };
+
         GameMemory gameMemory = readGameMemory(allocator);
         
         const auto backgrounds = gameMemory.backgrounds;
@@ -162,20 +164,35 @@ namespace ZeroXGame
             updateBackground(*(backgrounds.data() + i));
         }
 
-        const auto players = gameMemory.players;
-        for (size_t i = 0; i < players.size(); ++i)
-        {
-            auto* player = players.data() + i;
-
-            player->transform.localToWorld[3].x += 0.35f * deltaTime;
-        }
+        physicsAccumulator += deltaTime;
 
         const auto enemies = gameMemory.enemies;
+        
+        float fixedDeltaTime = 1.0 / 90;
+        while (physicsAccumulator >= fixedDeltaTime)
+        {
+            for (size_t i = 0; i < enemies.size(); ++i)
+            {
+                auto* enemy = (enemies.data() + i);
+
+                enemy->physicsState.lastPosition        = enemy->physicsState.currentPosition;
+                enemy->physicsState.currentPosition.x   += (i + 1) * 0.90f * fixedDeltaTime;
+            }
+
+            physicsAccumulator -= fixedDeltaTime;
+        }
+
+        const float alpha = static_cast<float>(physicsAccumulator / fixedDeltaTime);
+
         for (size_t i = 0; i < enemies.size(); ++i)
         {
-            auto* enemy = enemies.data() + i;
+            auto* enemy = (enemies.data() + i);
 
-            enemy->transform.localToWorld[3].x += (i + 1) * 0.25f * deltaTime;
+            const glm::vec2 lerpPosition =
+                enemy->physicsState.lastPosition * (1.0f - alpha) +
+                enemy->physicsState.currentPosition * alpha;
+
+            setPosition(enemy->transform, lerpPosition);
         }
 
         const auto colliders = gameMemory.colliders;
