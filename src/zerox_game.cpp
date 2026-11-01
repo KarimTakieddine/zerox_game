@@ -57,7 +57,25 @@ namespace ZeroXGame
             material.uvOffset   = { 0.0f, 0.0625f };
         }
 
-        const size_t colliderCount{ 5 };
+        const size_t obstacleCount{ 1 };
+        allocator->requestMemory<uint64_t>(obstacleCount);
+        auto* obstacles = allocator->requestMemoryArray<Obstacle>(obstacleCount);
+
+        for (size_t i = 0; i < obstacleCount; ++i)
+        {
+            auto* obstacle = obstacles + i;
+
+            ZeroXBridge::Transform& transform = obstacle->gameEntity.renderEntity.transform;
+
+            setPosition(transform, { -4.0f, 0.0f });
+
+            ZeroXBridge::Material& material = obstacle->gameEntity.renderEntity.material;
+
+            material.uvScale    = { 0.0625f, 0.0625f };
+            material.uvOffset   = { 0.0625f, 0.0625f };
+        }
+
+        const size_t colliderCount{ enemyCount + playerCount + obstacleCount };
         allocator->requestMemory<uint64_t>(colliderCount);
         auto* colliders = allocator->requestMemoryArray<Collider>(colliderCount);
 
@@ -72,6 +90,10 @@ namespace ZeroXGame
             else if (i - playerCount < enemyCount)
             {
                 collider->target = &(enemies + i - playerCount)->renderEntity.transform;
+            }
+            else if (i - enemyCount - playerCount < obstacleCount)
+            {
+                collider->target = &(obstacles + i - enemyCount - playerCount)->gameEntity.renderEntity.transform;
             }
             else
             {
@@ -99,15 +121,26 @@ namespace ZeroXGame
 
         ++(*entitySectionCount);
 
+        const size_t tiledSpriteCount   = obstacleCount;
+        auto* tiledSpriteEntitySection  = allocator->requestMemory<EntitySection>(
+            EntitySection{
+                .type   = EntitySectionType::TILED_SPRITE,
+                .flags  = EntitySectionFlags::ALLOCATE_BATCH
+            }
+        );
+
+        ++(*entitySectionCount);
+
         auto* colliderEntitySection = allocator->requestMemory<EntitySection>(EntitySection{
             .type   = EntitySectionType::COLLIDER,
             .flags  = EntitySectionFlags::ALLOCATE_BATCH });
 
         ++(*entitySectionCount);
 
-        auto* backgroundReadDescriptors = allocator->requestMemoryArray<EntityReadDescriptor>(backgroundCount);
-        auto* spriteReadDescriptors     = allocator->requestMemoryArray<EntityReadDescriptor>(spriteCount);
-        auto* colliderReadDescriptors   = allocator->requestMemoryArray<EntityReadDescriptor>(colliderCount);
+        auto* backgroundReadDescriptors     = allocator->requestMemoryArray<EntityReadDescriptor>(backgroundCount);
+        auto* spriteReadDescriptors         = allocator->requestMemoryArray<EntityReadDescriptor>(spriteCount);
+        auto* tiledSpriteReadDescriptors    = allocator->requestMemoryArray<EntityReadDescriptor>(tiledSpriteCount);
+        auto* colliderReadDescriptors       = allocator->requestMemoryArray<EntityReadDescriptor>(colliderCount);
 
         // Set entity section offsets
 
@@ -142,6 +175,17 @@ namespace ZeroXGame
 
         spriteEntitySection->readDescriptors = spriteReadDescriptors;
         spriteEntitySection->descriptorCount = spriteCount;
+
+        entityCursor.step<uint64_t>();
+        for (size_t i = 0; i < obstacleCount; ++i)
+        {
+            *(tiledSpriteReadDescriptors + i) = { .start = entityCursor.getOffset() };
+
+            entityCursor.step<Obstacle>();
+        }
+
+        tiledSpriteEntitySection->readDescriptors = tiledSpriteReadDescriptors;
+        tiledSpriteEntitySection->descriptorCount = tiledSpriteCount;
 
         entityCursor.step<uint64_t>();
         for (size_t i = 0; i < colliderCount; ++i)

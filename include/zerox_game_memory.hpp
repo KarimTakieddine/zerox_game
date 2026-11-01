@@ -7,6 +7,7 @@
 #include "zerox_game.h"
 #include "zerox_game_background.h"
 #include "zerox_game_collider.h"
+#include "zerox_game_obstacle.h"
 
 namespace ZeroXGame
 {
@@ -16,7 +17,7 @@ namespace ZeroXGame
         std::span<Background> backgrounds;
         std::span<GameEntity> players;
         std::span<GameEntity> enemies;
-        std::span<GameEntity> obstacles;
+        std::span<Obstacle> obstacles;
         std::span<Collider> colliders;
         std::span<uint64_t> entitySectionCount;
         std::span<std::byte> entitySectionSpan;
@@ -42,6 +43,9 @@ namespace ZeroXGame
 
         result.enemies = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<GameEntity>(result.enemies.size());
+
+        result.obstacles = gameMemoryView.read_contiguous_array<Obstacle>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Obstacle>(result.obstacles.size());
 
         result.colliders = gameMemoryView.read_contiguous_array<Collider>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Collider>(result.colliders.size());
