@@ -2,6 +2,8 @@
 
 #include <glm/vec2.hpp>
 
+#include <zerox_render_entity.h>
+
 #include "zerox_game_transform.h"
 #include "zerox_game_material.h"
 
@@ -15,8 +17,7 @@ namespace ZeroXGame
 
     struct alignas(16) GameEntity
     {
-        Transform transform;
-        Material material;
+        ZeroXBridge::RenderEntity renderEntity;
         PhysicsState physicsState;
     };
 }

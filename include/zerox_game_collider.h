@@ -10,6 +10,6 @@ namespace ZeroXGame
 	{
 		GameEntity gameEntity;
 		glm::vec2 size{ 1.0f, 1.0f };
-		Transform* target;
+		ZeroXBridge::Transform* target;
 	};
 }

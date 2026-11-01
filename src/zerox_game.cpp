@@ -37,7 +37,7 @@ namespace ZeroXGame
 
         for (size_t i = 0; i < playerCount; ++i)
         {
-            (players + i)->material.uvScale = { 0.0625f, 0.0625f };
+            (players + i)->renderEntity.material.uvScale = { 0.0625f, 0.0625f };
         }
 
         const size_t enemyCount{ 4 };
@@ -48,8 +48,10 @@ namespace ZeroXGame
         {
             auto* enemy = enemies + i;
 
-            enemy->material.uvScale         = { 0.0625f, 0.0625f };
-            enemy->material.textureOffset   = { 0.0f, 0.0625f };
+            ZeroXBridge::Material& material = enemy->renderEntity.material;
+
+            material.uvScale    = { 0.0625f, 0.0625f };
+            material.uvOffset   = { 0.0f, 0.0625f };
         }
 
         const size_t colliderCount{ 5 };
@@ -62,11 +64,11 @@ namespace ZeroXGame
 
             if (i < playerCount)
             {
-                collider->target = &(players + i)->transform;
+                collider->target = &(players + i)->renderEntity.transform;
             }
             else if (i - playerCount < enemyCount)
             {
-                collider->target = &(enemies + i - playerCount)->transform;
+                collider->target = &(enemies + i - playerCount)->renderEntity.transform;
             }
             else
             {
@@ -192,7 +194,7 @@ namespace ZeroXGame
                 enemy->physicsState.lastPosition * (1.0f - alpha) +
                 enemy->physicsState.currentPosition * alpha;
 
-            setPosition(enemy->transform, lerpPosition);
+            setPosition(enemy->renderEntity.transform, lerpPosition);
         }
 
         const auto colliders = gameMemory.colliders;
