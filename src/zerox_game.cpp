@@ -67,7 +67,10 @@ namespace ZeroXGame
 
             ZeroXBridge::Transform& transform = obstacle->gameEntity.renderEntity.transform;
 
-            setPosition(transform, { -4.0f, 0.0f });
+            setPosition(transform, { 0.0f, -8.0f });
+            setLocalScale(transform, { 32.0f, 1.0f });
+
+            (obstacles + i)->tileSize = { 16.0f, 1.0f };
 
             ZeroXBridge::Material& material = obstacle->gameEntity.renderEntity.material;
 
@@ -94,6 +97,7 @@ namespace ZeroXGame
             else if (i - enemyCount - playerCount < obstacleCount)
             {
                 collider->target = &(obstacles + i - enemyCount - playerCount)->gameEntity.renderEntity.transform;
+                collider->size = { 32.0f, 1.0f };
             }
             else
             {
@@ -210,11 +214,17 @@ namespace ZeroXGame
         GameMemory gameMemory = readGameMemory(allocator);
         
         const auto backgrounds  = gameMemory.backgrounds;
+        const auto obstacles    = gameMemory.obstacles;
         const auto enemies      = gameMemory.enemies;
 
         for (size_t i = 0; i < backgrounds.size(); ++i)
         {
             updateBackground(*(backgrounds.data() + i), deltaTime);
+        }
+
+        for (size_t i = 0; i < obstacles.size(); ++i)
+        {
+            updateObstacle(*(obstacles.data() + i), deltaTime);
         }
 
         double fixedDeltaTime = 1.0 / 90;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/vec_swizzle.hpp>
@@ -20,5 +21,10 @@ namespace ZeroXGame
 
         p.x = position.x;
         p.y = position.y;
+    }
+
+    inline void setLocalScale(ZeroXBridge::Transform& transform, const glm::vec2& localScale)
+    {
+        transform.localScale = glm::scale(glm::mat4{ 1.0f }, glm::vec3(localScale, 1.0f));
     }
 }
