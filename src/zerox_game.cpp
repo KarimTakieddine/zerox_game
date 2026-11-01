@@ -28,7 +28,10 @@ namespace ZeroXGame
 
         for (size_t i = 0; i < backgroundCount; ++i)
         {
-            (backgrounds + i)->layer = static_cast<uint64_t>(i);
+            const float multiplier = (i % 2) == 0 ? -1.0f : 1.0f;
+
+            (backgrounds + i)->scrollSpeed  = { ( 1.0f / static_cast<float>(i + 1) ) * 0.0625f * multiplier, 0.0f};
+            (backgrounds + i)->layer        = static_cast<uint64_t>(i);
         }
 
         const size_t playerCount{ 1 };
@@ -158,19 +161,19 @@ namespace ZeroXGame
     {
         static double physicsAccumulator{ 0.0 };
 
-        GameMemory gameMemory = readGameMemory(allocator);
-        
-        const auto backgrounds = gameMemory.backgrounds;
-        for (size_t i = 0; i < backgrounds.size(); ++i)
-        {
-            updateBackground(*(backgrounds.data() + i));
-        }
-
         physicsAccumulator += deltaTime;
 
-        const auto enemies = gameMemory.enemies;
+        GameMemory gameMemory = readGameMemory(allocator);
         
-        float fixedDeltaTime = 1.0 / 90;
+        const auto backgrounds  = gameMemory.backgrounds;
+        const auto enemies      = gameMemory.enemies;
+
+        for (size_t i = 0; i < backgrounds.size(); ++i)
+        {
+            updateBackground(*(backgrounds.data() + i), deltaTime);
+        }
+
+        double fixedDeltaTime = 1.0 / 90;
         while (physicsAccumulator >= fixedDeltaTime)
         {
             for (size_t i = 0; i < enemies.size(); ++i)
@@ -178,7 +181,7 @@ namespace ZeroXGame
                 auto* enemy = (enemies.data() + i);
 
                 enemy->physicsState.lastPosition        = enemy->physicsState.currentPosition;
-                enemy->physicsState.currentPosition.x   += (i + 1) * 0.90f * fixedDeltaTime;
+                enemy->physicsState.currentPosition.x   += static_cast<float>((i + 1) * 0.90 * fixedDeltaTime);
             }
 
             physicsAccumulator -= fixedDeltaTime;

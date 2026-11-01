@@ -14,7 +14,6 @@ endif()
 Project(${PROJECT_NAME})
 
 list(APPEND SOURCES
-    ${SRC_DIR}/zerox_game_updater.cpp
     ${SRC_DIR}/zerox_game.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
