@@ -1,9 +1,5 @@
-#include <zerox_render_descriptor.h>
-
 #include "zerox_game.h"
-#include "zerox_game_entity.h"
-#include "zerox_game_memory.hpp"
-#include "zerox_game_updater.h"
+#include "zerox_game_logic.h"
 
 namespace ZeroXGame
 {
@@ -36,22 +32,31 @@ namespace ZeroXGame
 
         const size_t playerCount{ 1 };
         allocator->requestMemory<uint64_t>(playerCount);
-        auto* players = allocator->requestMemoryArray<GameEntity>(playerCount);
+        auto* players = allocator->requestMemoryArray<Player>(playerCount);
 
         for (size_t i = 0; i < playerCount; ++i)
         {
-            (players + i)->renderEntity.material.uvScale = { 0.0625f, 0.0625f };
+            (players + i)->gameEntity.renderEntity.material.uvScale = { 0.0625f, 0.0625f };
         }
 
         const size_t enemyCount{ 4 };
         allocator->requestMemory<uint64_t>(enemyCount);
-        auto* enemies = allocator->requestMemoryArray<GameEntity>(enemyCount);
+        auto* enemies = allocator->requestMemoryArray<Enemy>(enemyCount);
 
         for (size_t i = 0; i < enemyCount; ++i)
         {
             auto* enemy = enemies + i;
 
-            ZeroXBridge::Material& material = enemy->renderEntity.material;
+            ZeroXBridge::Transform& transform = enemy->gameEntity.renderEntity.transform;
+
+            const glm::vec2 position{ 3 * i, 0.0f };
+
+            setPosition(transform, position);
+
+            enemy->gameEntity.physicsState.currentPosition   = position;
+            enemy->gameEntity.physicsState.lastPosition      = position;
+
+            ZeroXBridge::Material& material = enemy->gameEntity.renderEntity.material;
 
             material.uvScale    = { 0.0625f, 0.0625f };
             material.uvOffset   = { 0.0f, 0.0625f };
@@ -67,7 +72,12 @@ namespace ZeroXGame
 
             ZeroXBridge::Transform& transform = obstacle->gameEntity.renderEntity.transform;
 
-            setPosition(transform, { 0.0f, -8.0f });
+            const glm::vec2 position = { 0.0f, -8.0f };
+
+            obstacle->gameEntity.physicsState.currentPosition   = position;
+            obstacle->gameEntity.physicsState.lastPosition      = position;
+
+            setPosition(transform, position);
             setLocalScale(transform, { 32.0f, 1.0f });
 
             (obstacles + i)->tileSize = { 16.0f, 1.0f };
@@ -88,11 +98,11 @@ namespace ZeroXGame
 
             if (i < playerCount)
             {
-                collider->target = &(players + i)->renderEntity.transform;
+                collider->target = &(players + i)->gameEntity.renderEntity.transform;
             }
             else if (i - playerCount < enemyCount)
             {
-                collider->target = &(enemies + i - playerCount)->renderEntity.transform;
+                collider->target = &(enemies + i - playerCount)->gameEntity.renderEntity.transform;
             }
             else if (i - enemyCount - playerCount < obstacleCount)
             {
@@ -166,7 +176,7 @@ namespace ZeroXGame
         {
             *(spriteReadDescriptors + i) = { .start = entityCursor.getOffset() };
 
-            entityCursor.step<GameEntity>();
+            entityCursor.step<Player>();
         }
 
         entityCursor.step<uint64_t>();
@@ -174,7 +184,7 @@ namespace ZeroXGame
         {
             *(spriteReadDescriptors + playerCount + i) = { .start = entityCursor.getOffset() };
 
-            entityCursor.step<GameEntity>();
+            entityCursor.step<Enemy>();
         }
 
         spriteEntitySection->readDescriptors = spriteReadDescriptors;
@@ -207,58 +217,13 @@ namespace ZeroXGame
 
     void updateGame(GameAllocator* allocator, double deltaTime)
     {
-        static double physicsAccumulator{ 0.0 };
+        double physicsAccumulator{ 0.0 };
 
-        physicsAccumulator += deltaTime;
-
-        GameMemory gameMemory = readGameMemory(allocator);
-        
-        const auto backgrounds  = gameMemory.backgrounds;
-        const auto obstacles    = gameMemory.obstacles;
-        const auto enemies      = gameMemory.enemies;
-
-        for (size_t i = 0; i < backgrounds.size(); ++i)
-        {
-            updateBackground(*(backgrounds.data() + i), deltaTime);
-        }
-
-        for (size_t i = 0; i < obstacles.size(); ++i)
-        {
-            updateObstacle(*(obstacles.data() + i), deltaTime);
-        }
-
-        double fixedDeltaTime = 1.0 / 90;
-        while (physicsAccumulator >= fixedDeltaTime)
-        {
-            for (size_t i = 0; i < enemies.size(); ++i)
-            {
-                auto* enemy = (enemies.data() + i);
-
-                enemy->physicsState.lastPosition        = enemy->physicsState.currentPosition;
-                enemy->physicsState.currentPosition.x   += static_cast<float>((i + 1) * 0.90 * fixedDeltaTime);
-            }
-
-            physicsAccumulator -= fixedDeltaTime;
-        }
-
-        const float alpha = static_cast<float>(physicsAccumulator / fixedDeltaTime);
-
-        for (size_t i = 0; i < enemies.size(); ++i)
-        {
-            auto* enemy = (enemies.data() + i);
-
-            const glm::vec2 lerpPosition =
-                enemy->physicsState.lastPosition * (1.0f - alpha) +
-                enemy->physicsState.currentPosition * alpha;
-
-            setPosition(enemy->renderEntity.transform, lerpPosition);
-        }
-
-        const auto colliders = gameMemory.colliders;
-        for (size_t i = 0; i < colliders.size(); ++i)
-        {
-            updateCollider(*(colliders.data() + i));
-        }
+        step(
+            readGameMemory(allocator),
+            deltaTime,
+            1.0 / 90,
+            &physicsAccumulator);
     }
 
     RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator)

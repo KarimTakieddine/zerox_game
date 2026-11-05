@@ -7,7 +7,9 @@
 #include "zerox_game.h"
 #include "zerox_game_background.h"
 #include "zerox_game_collider.h"
+#include "zerox_game_enemy.h"
 #include "zerox_game_obstacle.h"
+#include "zerox_game_player.h"
 
 namespace ZeroXGame
 {
@@ -15,8 +17,8 @@ namespace ZeroXGame
     {
         std::span<ZeroXBridge::Input> input;
         std::span<Background> backgrounds;
-        std::span<GameEntity> players;
-        std::span<GameEntity> enemies;
+        std::span<Player> players;
+        std::span<Enemy> enemies;
         std::span<Obstacle> obstacles;
         std::span<Collider> colliders;
         std::span<uint64_t> entitySectionCount;
@@ -38,11 +40,11 @@ namespace ZeroXGame
         result.backgrounds = gameMemoryView.read_contiguous_array<Background>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Background>(result.backgrounds.size());
         
-        result.players = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
-        gameMemoryCursor.step_array<GameEntity>(result.players.size());
+        result.players = gameMemoryView.read_contiguous_array<Player>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Player>(result.players.size());
 
-        result.enemies = gameMemoryView.read_contiguous_array<GameEntity>(gameMemoryCursor.getOffset());
-        gameMemoryCursor.step_array<GameEntity>(result.enemies.size());
+        result.enemies = gameMemoryView.read_contiguous_array<Enemy>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Enemy>(result.enemies.size());
 
         result.obstacles = gameMemoryView.read_contiguous_array<Obstacle>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Obstacle>(result.obstacles.size());
