@@ -16,6 +16,7 @@ namespace ZeroXGame
     struct GameMemory
     {
         std::span<ZeroXBridge::Input> input;
+        std::span<ZeroXBridge::Level> levels;
         std::span<Background> backgrounds;
         std::span<Player> players;
         std::span<Enemy> enemies;
@@ -24,6 +25,28 @@ namespace ZeroXGame
         std::span<uint64_t> entitySectionCount;
         std::span<std::byte> entitySectionSpan;
     };
+
+    inline size_t getReservedSize(const GameMemory& memory)
+    {
+        MemoryCursor<GAME_MEMORY_ALIGNMENT> cursor;
+
+        cursor.step<ZeroXBridge::Input>();
+
+        const auto levels = memory.levels;
+        cursor.step_array<ZeroXBridge::Level>(levels.size());
+
+        for (size_t i = 0; i < levels.size(); ++i)
+        {
+            const ZeroXBridge::Level* level = levels.data() + i;
+
+            cursor.step_array<ZeroXBridge::BackgroundConfig>(level->backgroundCount);
+            cursor.step_array<ZeroXBridge::PlayerConfig>(level->playerCount);
+            cursor.step_array<ZeroXBridge::EnemyConfig>(level->enemyCount);
+            cursor.step_array<ZeroXBridge::ObstacleConfig>(level->obstacleCount);
+        }
+
+        return cursor.getOffset();
+    }
 
     inline GameMemory readGameMemory(const GameAllocator* allocator)
     {
@@ -36,6 +59,24 @@ namespace ZeroXGame
 
         result.input = gameMemoryView.read_object<ZeroXBridge::Input>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step<ZeroXBridge::Input>();
+
+        result.levels = gameMemoryView.read_contiguous_array<ZeroXBridge::Level>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<ZeroXBridge::Level>(result.levels.size());
+
+        for (size_t i = 0; i < result.levels.size(); ++i)
+        {
+            const auto* level = result.levels.data() + i;
+
+            gameMemoryCursor.step_array<ZeroXBridge::BackgroundConfig>(level->backgroundCount);
+            gameMemoryCursor.step_array<ZeroXBridge::PlayerConfig>(level->playerCount);
+            gameMemoryCursor.step_array<ZeroXBridge::EnemyConfig>(level->enemyCount);
+            gameMemoryCursor.step_array<ZeroXBridge::ObstacleConfig>(level->obstacleCount);
+        }
+
+        if (gameMemoryCursor.getOffset() >= gameMemorySpan.size())
+        {
+            return result;
+        }
 
         result.backgrounds = gameMemoryView.read_contiguous_array<Background>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Background>(result.backgrounds.size());

@@ -15,10 +15,6 @@ namespace ZeroXGame
 
 	inline void updateBackground(ZeroXGame::Background* background, double deltaTime)
 	{
-		ZeroXBridge::RenderEntity& renderEntity = background->entity.renderEntity;
-
-		renderEntity.transform.localScale	= glm::scale(glm::mat4(1.0f), { 33.0f, 16.875f, 1.0f });
-		renderEntity.material.uvOffset		+= static_cast<float>(deltaTime) * background->scrollSpeed;
-		renderEntity.layer					= background->layer;
+		background->entity.renderEntity.material.uvOffset += static_cast<float>(deltaTime) * background->scrollSpeed;
 	}
 }

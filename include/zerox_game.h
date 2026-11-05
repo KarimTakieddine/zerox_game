@@ -3,6 +3,8 @@
 #include <cstddef>
 
 #include <bump_allocator.hpp>
+
+#include <zerox_game_context.h>
 #include <zerox_render_descriptor.h>
 
 #include "zerox_game_api.h"
@@ -14,7 +16,8 @@ namespace ZeroXGame
     using GameAllocator = BumpAllocator<GAME_MEMORY_ALIGNMENT>;
     using ZeroXBridge::RenderDescriptor;
 
-    extern "C" ZEROX_GAME_API bool initializeGame(GameAllocator* allocator);
+    extern "C" ZEROX_GAME_API ZeroXBridge::GameContext initializeGame(GameAllocator* allocator);
+    extern "C" ZEROX_GAME_API bool loadLevel(const ZeroXBridge::GameContext* context, GameAllocator* allocator, size_t index);
 	extern "C" ZEROX_GAME_API void updateGame(GameAllocator* allocator, double deltaTime);
     extern "C" ZEROX_GAME_API RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator);
 }

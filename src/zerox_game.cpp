@@ -1,6 +1,8 @@
 #include "zerox_game.h"
 #include "zerox_game_logic.h"
 
+#include <zerox_level.hpp>
+
 namespace ZeroXGame
 {
     using ZeroXBridge::EntitySection;
@@ -9,109 +11,189 @@ namespace ZeroXGame
     using ZeroXBridge::EntityReadDescriptor;
     using ZeroXBridge::RenderDescriptor;
 
-    bool initializeGame(GameAllocator* allocator)
+    ZeroXBridge::GameContext initializeGame(GameAllocator* allocator)
     {
+        ZeroXBridge::GameContext context = { .input = allocator->requestMemory<ZeroXBridge::Input>() };
+
         if (!allocator)
+        {
+            return context;
+        }
+
+        const auto levelCount   = *allocator->requestMemory<uint64_t>(1);
+        auto* levels            = allocator->requestMemoryArray<ZeroXBridge::Level>(1);
+
+        const auto backgroundCount  = *allocator->requestMemory<uint64_t>(2);
+        auto* backgroundConfigs     = allocator->requestMemoryArray<ZeroXBridge::BackgroundConfig>(backgroundCount);
+
+        backgroundConfigs[0].transformConfig.position   = { 0.0f, 0.0f };
+        backgroundConfigs[0].transformConfig.scale      = { 33.0f, 16.875f };
+
+        backgroundConfigs[1].transformConfig.position   = { 0.0f, 0.0f };
+        backgroundConfigs[1].transformConfig.scale      = { 33.0f, 16.875f };
+
+        levels->backgrounds     = backgroundConfigs;
+        levels->backgroundCount = backgroundCount;
+
+        const auto playerCount  = *allocator->requestMemory<uint64_t>(1);
+        auto* playerConfigs     = allocator->requestMemoryArray<ZeroXBridge::PlayerConfig>(playerCount);
+
+        playerConfigs[0].transformConfig.position   = { 0.0f, 0.0f };
+        playerConfigs[0].materialConfig.uvScale     = { 0.0625f, 0.0625f };
+
+        levels->players     = playerConfigs;
+        levels->playerCount = playerCount;
+
+        const auto enemyCount   = *allocator->requestMemory<uint64_t>(4);
+        auto* enemyConfigs      = allocator->requestMemoryArray<ZeroXBridge::EnemyConfig>(enemyCount);
+
+        enemyConfigs[0].transformConfig.position    = { 3.0f, 0.0f };
+        enemyConfigs[0].materialConfig.uvScale      = { 0.0625f, 0.0625f };
+        enemyConfigs[0].materialConfig.uvOffset     = { 0.0f, 0.0625f };
+
+        enemyConfigs[1].transformConfig.position    = { 6.0f, 0.0f };
+        enemyConfigs[1].materialConfig.uvScale      = { 0.0625f, 0.0625f };
+        enemyConfigs[1].materialConfig.uvOffset     = { 0.0f, 0.0625f };
+
+        enemyConfigs[2].transformConfig.position    = { 9.0f, 0.0f };
+        enemyConfigs[2].materialConfig.uvScale      = { 0.0625f, 0.0625f };
+        enemyConfigs[2].materialConfig.uvOffset     = { 0.0f, 0.0625f };
+
+        enemyConfigs[3].transformConfig.position    = { 12.0f, 0.0f };
+        enemyConfigs[3].materialConfig.uvScale      = { 0.0625f, 0.0625f };
+        enemyConfigs[3].materialConfig.uvOffset     = { 0.0f, 0.0625f };
+
+        levels->enemies     = enemyConfigs;
+        levels->enemyCount  = enemyCount;
+
+        const auto obstacleCount    = *allocator->requestMemory<uint64_t>(1);
+        auto* obstacleConfigs       = allocator->requestMemoryArray<ZeroXBridge::ObstacleConfig>(obstacleCount);
+
+        obstacleConfigs[0].transformConfig.position = { 0.0f, -8.0f };
+        obstacleConfigs[0].transformConfig.scale    = { 32.0f, 1.0f };
+        obstacleConfigs[0].colliderConfig.size      = { 32.0f, 1.0f };
+        obstacleConfigs[0].materialConfig.uvScale   = { 0.0625f, 0.0625f };
+        obstacleConfigs[0].materialConfig.uvOffset  = { 0.0625f, 0.0625f };
+        obstacleConfigs[0].materialConfig.tileSizeX = 16;
+
+        levels->obstacles       = obstacleConfigs;
+        levels->obstacleCount   = obstacleCount;
+
+        context.levels      = levels;
+        context.levelCount  = levelCount;
+
+        return context;
+    }
+
+    bool loadLevel(const ZeroXBridge::GameContext* context, GameAllocator* allocator, size_t index)
+    {
+        if (!context)
         {
             return false;
         }
 
-        // Allocate game entities
+        if (index >= context->levelCount)
+        {
+            return false;
+        }
 
-        const size_t backgroundCount{ 2 };
-        allocator->requestMemory<uint64_t>(backgroundCount);
-        auto* backgrounds = allocator->requestMemoryArray<Background>(backgroundCount);
+        const GameMemory gameMemory = readGameMemory(allocator);
 
+        allocator->free(allocator->getLiveSizeInBytes() - getReservedSize(gameMemory));
+        const size_t baseLevelOffset = allocator->getLiveSizeInBytes();
+
+        const ZeroXBridge::Level* level = context->levels + index;
+
+        const auto backgroundCount  = *allocator->requestMemory<uint64_t>(level->backgroundCount);
+        auto* backgrounds           = allocator->requestMemoryArray<Background>(backgroundCount);
         for (size_t i = 0; i < backgroundCount; ++i)
         {
-            const float multiplier = (i % 2) == 0 ? -1.0f : 1.0f;
+            Background* background                      = backgrounds + i;
+            const ZeroXBridge::BackgroundConfig* config = level->backgrounds + i;
 
-            (backgrounds + i)->scrollSpeed  = { ( 1.0f / static_cast<float>(i + 1) ) * 0.0625f * multiplier, 0.0f};
-            (backgrounds + i)->layer        = static_cast<uint64_t>(i);
+            setPosition(background->entity.renderEntity.transform, config->transformConfig.position);
+            setLocalScale(background->entity.renderEntity.transform, config->transformConfig.scale);
+
+            background->entity.renderEntity.material    = config->materialConfig;
+            background->entity.renderEntity.layer       = static_cast<uint64_t>(i);
+
+            const float multiplier  = (i % 2) == 0 ? -1.0f : 1.0f;
+            background->scrollSpeed = { ( 1.0f / static_cast<float>(i + 1) ) * 0.0625f * multiplier, 0.0f};
         }
 
-        const size_t playerCount{ 1 };
-        allocator->requestMemory<uint64_t>(playerCount);
-        auto* players = allocator->requestMemoryArray<Player>(playerCount);
-
+        const auto playerCount  = *allocator->requestMemory<uint64_t>(level->playerCount);
+        auto* players           = allocator->requestMemoryArray<Player>(playerCount);
         for (size_t i = 0; i < playerCount; ++i)
         {
-            (players + i)->gameEntity.renderEntity.material.uvScale = { 0.0625f, 0.0625f };
+            Player* player                          = players + i;
+            const ZeroXBridge::PlayerConfig* config = level->players + i;
+
+            setPosition(player->gameEntity.renderEntity.transform, config->transformConfig.position);
+            setLocalScale(player->gameEntity.renderEntity.transform, config->transformConfig.scale);
+
+            player->gameEntity.physicsState.currentPosition = config->transformConfig.position;
+            player->gameEntity.physicsState.lastPosition    = config->transformConfig.position;
+
+            player->gameEntity.renderEntity.material = config->materialConfig;
         }
 
-        const size_t enemyCount{ 4 };
-        allocator->requestMemory<uint64_t>(enemyCount);
-        auto* enemies = allocator->requestMemoryArray<Enemy>(enemyCount);
-
+        const auto enemyCount   = *allocator->requestMemory<uint64_t>(level->enemyCount);
+        auto* enemies           = allocator->requestMemoryArray<Enemy>(enemyCount);
         for (size_t i = 0; i < enemyCount; ++i)
         {
-            auto* enemy = enemies + i;
+            Enemy* enemy                            = enemies + i;
+            const ZeroXBridge::EnemyConfig* config  = level->enemies + i;
 
-            ZeroXBridge::Transform& transform = enemy->gameEntity.renderEntity.transform;
+            setPosition(enemy->gameEntity.renderEntity.transform, config->transformConfig.position);
+            setLocalScale(enemy->gameEntity.renderEntity.transform, config->transformConfig.scale);
 
-            const glm::vec2 position{ 3 * i, 0.0f };
+            enemy->gameEntity.physicsState.currentPosition  = config->transformConfig.position;
+            enemy->gameEntity.physicsState.lastPosition     = config->transformConfig.position;
 
-            setPosition(transform, position);
-
-            enemy->gameEntity.physicsState.currentPosition   = position;
-            enemy->gameEntity.physicsState.lastPosition      = position;
-
-            ZeroXBridge::Material& material = enemy->gameEntity.renderEntity.material;
-
-            material.uvScale    = { 0.0625f, 0.0625f };
-            material.uvOffset   = { 0.0f, 0.0625f };
+            enemy->gameEntity.renderEntity.material = config->materialConfig;
         }
 
-        const size_t obstacleCount{ 1 };
-        allocator->requestMemory<uint64_t>(obstacleCount);
-        auto* obstacles = allocator->requestMemoryArray<Obstacle>(obstacleCount);
-
+        const auto obstacleCount    = *allocator->requestMemory<uint64_t>(level->obstacleCount);
+        auto* obstacles             = allocator->requestMemoryArray<Obstacle>(obstacleCount);
         for (size_t i = 0; i < obstacleCount; ++i)
         {
-            auto* obstacle = obstacles + i;
+            Obstacle* obstacle                          = obstacles + i;
+            const ZeroXBridge::ObstacleConfig* config   = level->obstacles + i;
 
-            ZeroXBridge::Transform& transform = obstacle->gameEntity.renderEntity.transform;
+            setPosition(obstacle->gameEntity.renderEntity.transform, config->transformConfig.position);
+            setLocalScale(obstacle->gameEntity.renderEntity.transform, config->transformConfig.scale);
 
-            const glm::vec2 position = { 0.0f, -8.0f };
+            obstacle->gameEntity.physicsState.currentPosition   = config->transformConfig.position;
+            obstacle->gameEntity.physicsState.lastPosition      = config->transformConfig.position;
 
-            obstacle->gameEntity.physicsState.currentPosition   = position;
-            obstacle->gameEntity.physicsState.lastPosition      = position;
-
-            setPosition(transform, position);
-            setLocalScale(transform, { 32.0f, 1.0f });
-
-            (obstacles + i)->tileSize = { 16.0f, 1.0f };
-
-            ZeroXBridge::Material& material = obstacle->gameEntity.renderEntity.material;
-
-            material.uvScale    = { 0.0625f, 0.0625f };
-            material.uvOffset   = { 0.0625f, 0.0625f };
+            obstacle->gameEntity.renderEntity.material = config->materialConfig;
         }
 
-        const size_t colliderCount{ enemyCount + playerCount + obstacleCount };
-        allocator->requestMemory<uint64_t>(colliderCount);
-        auto* colliders = allocator->requestMemoryArray<Collider>(colliderCount);
-
+        const auto colliderCount    = *allocator->requestMemory<uint64_t>(playerCount + enemyCount + obstacleCount);
+        auto* colliders             = allocator->requestMemoryArray<Collider>(colliderCount);
         for (size_t i = 0; i < colliderCount; ++i)
         {
-            auto* collider = colliders + i;
+            Collider* collider = colliders + i;
 
             if (i < playerCount)
             {
-                collider->target = &(players + i)->gameEntity.renderEntity.transform;
+                collider->target    = &(players + i)->gameEntity.renderEntity.transform;
+                collider->size      = (level->players + i)->colliderConfig.size;
             }
             else if (i - playerCount < enemyCount)
             {
-                collider->target = &(enemies + i - playerCount)->gameEntity.renderEntity.transform;
+                collider->target    = &(enemies + i - playerCount)->gameEntity.renderEntity.transform;
+                collider->size      = (level->enemies + i - playerCount)->colliderConfig.size;
             }
-            else if (i - enemyCount - playerCount < obstacleCount)
+            else if (i - playerCount - enemyCount < obstacleCount)
             {
-                collider->target = &(obstacles + i - enemyCount - playerCount)->gameEntity.renderEntity.transform;
-                collider->size = { 32.0f, 1.0f };
+                collider->target    = &(obstacles + i - playerCount - enemyCount)->gameEntity.renderEntity.transform;
+                collider->size      = (level->obstacles + i - playerCount - enemyCount)->colliderConfig.size;
             }
             else
             {
-                collider->target = nullptr;
+                collider->size      = { 0.0f, 0.0f };
+                collider->target    = nullptr;
             }
         }
 
@@ -158,7 +240,7 @@ namespace ZeroXGame
 
         // Set entity section offsets
 
-        MemoryCursor<16> entityCursor(sizeof(ZeroXBridge::Input));
+        MemoryCursor<16> entityCursor(baseLevelOffset);
 
         entityCursor.step<uint64_t>();
         for (size_t i = 0; i < backgroundCount; ++i)

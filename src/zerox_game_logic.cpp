@@ -59,7 +59,7 @@ namespace ZeroXGame
 		{
 			auto* obstacle = obstacles.data() + i;
 
-			// fixedUpdateObstacle(obstacle, deltaTime);
+			fixedUpdateObstacle(obstacle, deltaTime);
 			::savePhysicsState(obstacle->gameEntity.physicsState);
 		}
 
