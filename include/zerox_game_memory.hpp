@@ -10,13 +10,14 @@
 #include "zerox_game_enemy.h"
 #include "zerox_game_obstacle.h"
 #include "zerox_game_player.h"
+#include "zerox_game_level.h"
 
 namespace ZeroXGame
 {
     struct GameMemory
     {
         std::span<ZeroXBridge::Input> input;
-        std::span<ZeroXBridge::Level> levels;
+        std::span<Level> levels;
         std::span<Background> backgrounds;
         std::span<Player> players;
         std::span<Enemy> enemies;
@@ -33,16 +34,16 @@ namespace ZeroXGame
         cursor.step<ZeroXBridge::Input>();
 
         const auto levels = memory.levels;
-        cursor.step_array<ZeroXBridge::Level>(levels.size());
+        cursor.step_array<Level>(levels.size());
 
         for (size_t i = 0; i < levels.size(); ++i)
         {
-            const ZeroXBridge::Level* level = levels.data() + i;
+            const Level* level = levels.data() + i;
 
-            cursor.step_array<ZeroXBridge::BackgroundConfig>(level->backgroundCount);
-            cursor.step_array<ZeroXBridge::PlayerConfig>(level->playerCount);
-            cursor.step_array<ZeroXBridge::EnemyConfig>(level->enemyCount);
-            cursor.step_array<ZeroXBridge::ObstacleConfig>(level->obstacleCount);
+            cursor.step_array<Background>(level->backgroundCount);
+            cursor.step_array<Player>(level->playerCount);
+            cursor.step_array<Enemy>(level->enemyCount);
+            cursor.step_array<Obstacle>(level->obstacleCount);
         }
 
         return cursor.getOffset();
@@ -60,17 +61,17 @@ namespace ZeroXGame
         result.input = gameMemoryView.read_object<ZeroXBridge::Input>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step<ZeroXBridge::Input>();
 
-        result.levels = gameMemoryView.read_contiguous_array<ZeroXBridge::Level>(gameMemoryCursor.getOffset());
-        gameMemoryCursor.step_array<ZeroXBridge::Level>(result.levels.size());
+        result.levels = gameMemoryView.read_contiguous_array<Level>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Level>(result.levels.size());
 
         for (size_t i = 0; i < result.levels.size(); ++i)
         {
             const auto* level = result.levels.data() + i;
 
-            gameMemoryCursor.step_array<ZeroXBridge::BackgroundConfig>(level->backgroundCount);
-            gameMemoryCursor.step_array<ZeroXBridge::PlayerConfig>(level->playerCount);
-            gameMemoryCursor.step_array<ZeroXBridge::EnemyConfig>(level->enemyCount);
-            gameMemoryCursor.step_array<ZeroXBridge::ObstacleConfig>(level->obstacleCount);
+            gameMemoryCursor.step_array<Background>(level->backgroundCount);
+            gameMemoryCursor.step_array<Player>(level->playerCount);
+            gameMemoryCursor.step_array<Enemy>(level->enemyCount);
+            gameMemoryCursor.step_array<Obstacle>(level->obstacleCount);
         }
 
         if (gameMemoryCursor.getOffset() >= gameMemorySpan.size())

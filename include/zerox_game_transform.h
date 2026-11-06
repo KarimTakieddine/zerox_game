@@ -12,7 +12,14 @@ namespace ZeroXGame
 {
     inline glm::vec2 getPosition(const ZeroXBridge::Transform& transform)
     {
-        return glm::xy(transform.localToWorld[0]);
+        return glm::xy(transform.localToWorld[3]);
+    }
+
+    inline glm::vec2 getScale(const ZeroXBridge::Transform& transform)
+    {
+        const glm::mat4& localScale = transform.localScale;
+
+        return { localScale[0].x, localScale[1].y };
     }
 
     inline void setPosition(ZeroXBridge::Transform& transform, const glm::vec2& position)
