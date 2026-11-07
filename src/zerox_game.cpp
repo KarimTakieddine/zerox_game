@@ -80,19 +80,19 @@ namespace ZeroXGame
         setLocalScale(obstacles[3].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
 
         obstacles[0].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[0].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0f };
+        obstacles[0].gameEntity.renderEntity.material.uvOffset  = { 0.0625f, 0.1875f };
         obstacles[0].gameEntity.renderEntity.material.tileSizeY = 16;
 
         obstacles[1].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[1].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0f };
+        obstacles[1].gameEntity.renderEntity.material.uvOffset  = { 0.0625f, 0.1875f };
         obstacles[1].gameEntity.renderEntity.material.tileSizeY = 16;
 
         obstacles[2].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[2].gameEntity.renderEntity.material.uvOffset  = { 0.0625f, 0.0625f };
+        obstacles[2].gameEntity.renderEntity.material.uvOffset  = { 0.0f, 0.1875f };
         obstacles[2].gameEntity.renderEntity.material.tileSizeX = 16;
 
         obstacles[3].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[3].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0625f };
+        obstacles[3].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.1875f };
         obstacles[3].gameEntity.renderEntity.material.tileSizeX = 32;
 
         levels->obstacles       = obstacles;
