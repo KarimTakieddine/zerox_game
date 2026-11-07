@@ -93,7 +93,7 @@ namespace ZeroXGame
 
         obstacles[3].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
         obstacles[3].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0625f };
-        obstacles[3].gameEntity.renderEntity.material.tileSizeX = 16;
+        obstacles[3].gameEntity.renderEntity.material.tileSizeX = 32;
 
         levels->obstacles       = obstacles;
         levels->obstacleCount   = obstacleCount;
