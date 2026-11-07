@@ -64,15 +64,36 @@ namespace ZeroXGame
         levels->enemies     = enemies;
         levels->enemyCount  = enemyCount;
 
-        const auto obstacleCount    = *allocator->requestMemory<uint64_t>(1);
+        const auto obstacleCount    = *allocator->requestMemory<uint64_t>(4);
         auto* obstacles             = allocator->requestMemoryArray<Obstacle>(obstacleCount);
 
-        setPosition(obstacles[0].gameEntity.renderEntity.transform, { 0.0f, -8.0f });
-        setLocalScale(obstacles[0].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
+        setPosition(obstacles[0].gameEntity.renderEntity.transform, { -15.25f, 0.0f });
+        setLocalScale(obstacles[0].gameEntity.renderEntity.transform, { 1.0f, 18.0f });
+
+        setPosition(obstacles[1].gameEntity.renderEntity.transform, { 15.25f, 0.0f });
+        setLocalScale(obstacles[1].gameEntity.renderEntity.transform, { 1.0f, 18.0f });
+
+        setPosition(obstacles[2].gameEntity.renderEntity.transform, { 0.0f, -8.0f });
+        setLocalScale(obstacles[2].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
+
+        setPosition(obstacles[3].gameEntity.renderEntity.transform, { 0.0f, 8.0f });
+        setLocalScale(obstacles[3].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
 
         obstacles[0].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[0].gameEntity.renderEntity.material.uvOffset  = { 0.0625f, 0.0625f };
-        obstacles[0].gameEntity.renderEntity.material.tileSizeX = 16;
+        obstacles[0].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0f };
+        obstacles[0].gameEntity.renderEntity.material.tileSizeY = 16;
+
+        obstacles[1].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
+        obstacles[1].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0f };
+        obstacles[1].gameEntity.renderEntity.material.tileSizeY = 16;
+
+        obstacles[2].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
+        obstacles[2].gameEntity.renderEntity.material.uvOffset  = { 0.0625f, 0.0625f };
+        obstacles[2].gameEntity.renderEntity.material.tileSizeX = 16;
+
+        obstacles[3].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
+        obstacles[3].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.0625f };
+        obstacles[3].gameEntity.renderEntity.material.tileSizeX = 16;
 
         levels->obstacles       = obstacles;
         levels->obstacleCount   = obstacleCount;
@@ -154,6 +175,9 @@ namespace ZeroXGame
             colliders->size     = getScale((players + i)->gameEntity.renderEntity.transform);
             colliders->target   = &(players + i)->gameEntity.renderEntity.transform;
 
+            setLocalScale(colliders->gameEntity.renderEntity.transform, colliders->size);
+            colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+
             ++colliders;
         }
 
@@ -162,15 +186,25 @@ namespace ZeroXGame
             colliders->size     = getScale((enemies + i)->gameEntity.renderEntity.transform);
             colliders->target   = &(enemies + i)->gameEntity.renderEntity.transform;
 
+            setLocalScale(colliders->gameEntity.renderEntity.transform, colliders->size);
+            colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+
             ++colliders;
         }
 
+        int sign{ 1 };
         for (size_t i = 0; i < obstacleCount; ++i)
         {
             colliders->size     = getScale((obstacles + i)->gameEntity.renderEntity.transform);
             colliders->target   = &(obstacles + i)->gameEntity.renderEntity.transform;
+            colliders->normal   = static_cast<float>(sign) * ( i < 2 ? glm::vec2{ 1.0f, 0.0f } : glm::vec2{ 0.0f, 1.0f } ); // TODO(Karim): Base on obstacle type?
+
+            setLocalScale(colliders->gameEntity.renderEntity.transform, colliders->size);
+            colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
 
             ++colliders;
+
+            sign = -sign;
         }
 
         // Allocate entity sections

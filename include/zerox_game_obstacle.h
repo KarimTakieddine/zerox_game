@@ -1,6 +1,7 @@
 #pragma once
 
 #include "zerox_game_entity.h"
+#include "zerox_game_collider.h"
 
 namespace ZeroXGame
 {
