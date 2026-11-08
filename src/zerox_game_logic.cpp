@@ -1,5 +1,6 @@
 #include <algorithm>
 
+#include "zerox_game_animation.h"
 #include "zerox_game_logic.h"
 #include "zerox_game_player.h"
 #include "zerox_game_transform.h"
