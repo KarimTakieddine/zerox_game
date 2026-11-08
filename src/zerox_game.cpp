@@ -32,16 +32,14 @@ namespace
             static_cast<float>(animationRegion.height) / sampleRegion.height
         };
 
-        const glm::vec2 uvOffset = {
-            static_cast<float>(animationRegion.x) / sampleRegion.width,
-            static_cast<float>(animationRegion.y) / sampleRegion.height
-        };
-
         for (size_t i = 0; i < frameCount; ++i)
         {
             *(animation->frames + i) = {
                 .uvScale    = uvScale,
-                .uvOffset   = uvOffset + static_cast<float>(i) * uvScale
+                .uvOffset = {
+                    0.0625f + i * 0.0625f,
+                    0.0f
+                }
             };
         }
     }
@@ -153,7 +151,7 @@ namespace ZeroXGame
             8);
 
         jumpAnimation->name                 = "player_front_jump";
-        jumpAnimation->timeBetweenFrames    = 1.0f;
+        jumpAnimation->timeBetweenFrames    = 0.0625f;
 
         return context;
     }

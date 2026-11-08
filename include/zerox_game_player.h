@@ -6,11 +6,13 @@ namespace ZeroXBridge { struct Input; }
 
 namespace ZeroXGame
 {
+	struct Animation;
+
 	struct Player
 	{
 		GameEntity gameEntity;
 	};
 
-	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
+	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
 }

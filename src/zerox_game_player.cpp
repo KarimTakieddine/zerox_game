@@ -5,9 +5,14 @@
 
 namespace ZeroXGame
 {
-	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input)
+	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations)
 	{
+		if (ZeroXBridge::isButtonPressedThisFrame(input->gamePad1, ZeroXBridge::Button::BUTTON_A))
+		{
+			playAnimation(player->gameEntity.renderEntity.material, animations);
+		}
 
+		animate(player->gameEntity.renderEntity.material, animations, static_cast<float>(deltaTime));
 	}
 
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input)

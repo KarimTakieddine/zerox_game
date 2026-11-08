@@ -59,7 +59,7 @@ namespace ZeroXGame
 		size_t currentFrame = animation->currentFrame;
 		if (animation->currentTime >= animation->timeBetweenFrames)
 		{
-			if (currentFrame < animation->frameCount)
+			if (currentFrame < animation->frameCount - 1)
 			{
 				++currentFrame;
 				playFrame(material, animation->frames + currentFrame);
@@ -96,5 +96,7 @@ namespace ZeroXGame
 
 		animation->flags &= ~(AnimationFlags::PAUSED | AnimationFlags::STOPPED);
 		animation->flags |= AnimationFlags::PLAYING;
+
+		return true;
 	}
 }

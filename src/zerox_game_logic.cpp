@@ -159,7 +159,7 @@ namespace ZeroXGame
 
 		for (size_t i = 0; i < players.size(); ++i)
 		{
-			updatePlayer(players.data() + i, deltaTime, input);
+			updatePlayer(players.data() + i, deltaTime, input, memory.animations.data());
 		}
 	}
 
