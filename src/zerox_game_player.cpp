@@ -24,29 +24,6 @@ namespace ZeroXGame
 
 		animate(player->gameEntity.renderEntity.material, animations, static_cast<float>(deltaTime));
 		animate(player->gameEntity.renderEntity.material, animations + 1, static_cast<float>(deltaTime));
-
-		/*if ((player->currentMovementState & MovementState::FALLING) == MovementState::FALLING)
-		{
-			if ((player->previousMovementState & MovementState::FALLING) != MovementState::FALLING)
-			{
-				playAnimation(player->gameEntity.renderEntity.material, animations + 1);
-			}
-		}
-		else if (ZeroXBridge::isButtonPressedThisFrame(input->gamePad1, ZeroXBridge::Button::BUTTON_A))
-		{
-			playAnimation(player->gameEntity.renderEntity.material, animations + 1);
-		}
-
-		animate(player->gameEntity.renderEntity.material, animations, static_cast<float>(deltaTime));
-
-		player->currentMovementState = player->previousMovementState;*/
-
-		/*if (ZeroXBridge::isButtonPressedThisFrame(input->gamePad1, ZeroXBridge::Button::BUTTON_A))
-		{
-			playAnimation(player->gameEntity.renderEntity.material, animations + 1);
-		}
-
-		animate(player->gameEntity.renderEntity.material, animations, static_cast<float>(deltaTime));*/
 	}
 
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input)
