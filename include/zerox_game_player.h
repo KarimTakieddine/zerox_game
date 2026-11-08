@@ -2,6 +2,8 @@
 
 #include "zerox_game_entity.h"
 
+namespace ZeroXBridge { struct Input; }
+
 namespace ZeroXGame
 {
 	struct Player
@@ -9,6 +11,6 @@ namespace ZeroXGame
 		GameEntity gameEntity;
 	};
 
-	void updatePlayer(Player* player, double deltaTime);
-	void fixedUpdatePlayer(Player* player, double deltaTime);
+	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
+	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
 }

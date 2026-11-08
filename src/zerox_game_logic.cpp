@@ -135,7 +135,7 @@ namespace
 
 namespace ZeroXGame
 {
-	void update(const GameMemory& memory, double deltaTime)
+	void update(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
 	{
 		const auto& backgrounds = memory.backgrounds;
 		const auto& obstacles	= memory.obstacles;
@@ -159,11 +159,11 @@ namespace ZeroXGame
 
 		for (size_t i = 0; i < players.size(); ++i)
 		{
-			updatePlayer(players.data() + i, deltaTime);
+			updatePlayer(players.data() + i, deltaTime, input);
 		}
 	}
 
-	void fixedUpdate(const GameMemory& memory, double deltaTime)
+	void fixedUpdate(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
 	{
 		const auto& obstacles	= memory.obstacles;
 		const auto& enemies		= memory.enemies;
@@ -193,7 +193,7 @@ namespace ZeroXGame
 			auto* player = players.data() + i;
 
 			::savePhysicsState(player->gameEntity.physicsState);
-			fixedUpdatePlayer(player, deltaTime);
+			fixedUpdatePlayer(player, deltaTime, input);
 
 			const Collider* playerCollider = colliders.data() + i;
 
@@ -256,10 +256,12 @@ namespace ZeroXGame
 
 		*physicsAccumulator += deltaTime;
 
+		const ZeroXBridge::Input* input = memory.input.data();
+
 		auto& accumulator = *physicsAccumulator;
 		while (accumulator >= fixedDeltaTime)
 		{
-			fixedUpdate(memory, fixedDeltaTime);
+			fixedUpdate(memory, fixedDeltaTime, input);
 
 			accumulator -= fixedDeltaTime;
 		}
@@ -272,6 +274,6 @@ namespace ZeroXGame
 			updateCollider(colliders.data() + i);
 		}
 
-		update(memory, deltaTime);
+		update(memory, deltaTime, input);
 	}
 }
