@@ -35,9 +35,9 @@ namespace
         for (size_t i = 0; i < frameCount; ++i)
         {
             *(animation->frames + i) = {
-                .uvScale    = uvScale,
+                .uvScale = uvScale,
                 .uvOffset = {
-                    0.0625f + i * 0.0625f,
+                    (static_cast<float>(animationRegion.x) / sampleRegion.width) + i * uvScale.x,
                     0.0f
                 }
             };
@@ -142,7 +142,9 @@ namespace ZeroXGame
         levels->obstacles       = obstacles;
         levels->obstacleCount   = obstacleCount;
 
-        auto* jumpAnimation = ::allocateAnimations(allocator, 1);
+        auto* animations = ::allocateAnimations(allocator, 2);
+
+        auto* jumpAnimation = animations;
         ::allocateFrames(
             allocator,
             jumpAnimation,
@@ -152,6 +154,17 @@ namespace ZeroXGame
 
         jumpAnimation->name                 = "player_front_jump";
         jumpAnimation->timeBetweenFrames    = 0.0625f;
+
+        auto* fallAnimation = animations + 1;
+        ::allocateFrames(
+            allocator,
+            fallAnimation,
+            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
+            { .x = 576, .y = 0, .width = 64, .height = 64 },
+            5);
+
+        fallAnimation->name                 = "player_front_fall";
+        fallAnimation->timeBetweenFrames    = 0.25f;
 
         return context;
     }

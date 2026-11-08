@@ -83,9 +83,14 @@ namespace ZeroXGame
 		animation->currentTime += deltaTime;
 	}
 
-	inline constexpr bool playAnimation(ZeroXBridge::Material& material, Animation* animation)
+	inline constexpr bool playAnimation(ZeroXBridge::Material& material, Animation* animation, bool immediate = false)
 	{
 		if (animation->frameCount == 0)
+		{
+			return false;
+		}
+
+		if (!immediate && ((animation->flags & AnimationFlags::PLAYING) == AnimationFlags::PLAYING))
 		{
 			return false;
 		}
