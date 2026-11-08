@@ -11,8 +11,8 @@ namespace ZeroXGame
 {
 	struct alignas(16) AnimationFrame
 	{
-		glm::vec2 uvOffset	{ 0.0f, 0.0f };
 		glm::vec2 uvScale	{ 0.0f, 0.0f };
+		glm::vec2 uvOffset	{ 0.0f, 0.0f };
 	};
 
 	enum class AnimationFlags : uint64_t

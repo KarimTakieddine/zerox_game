@@ -1,5 +1,51 @@
 #include "zerox_game.h"
+#include "zerox_game_animation.h"
 #include "zerox_game_logic.h"
+
+namespace
+{
+    struct PixelRegion
+    {
+        unsigned int x      { 0 };
+        unsigned int y      { 0 };
+        unsigned int width  { 0 };
+        unsigned int height { 0 };
+    };
+
+    using ZeroXGame::Animation;
+    using ZeroXGame::AnimationFlags;
+    using ZeroXGame::AnimationFrame;
+
+    Animation* allocateAnimations(ZeroXGame::GameAllocator* allocator, size_t count)
+    {
+        allocator->requestMemory<uint64_t>(static_cast<uint64_t>(count));
+        return allocator->requestMemoryArray<Animation>(count);
+    }
+
+    void allocateFrames(ZeroXGame::GameAllocator* allocator, Animation* animation, const PixelRegion& sampleRegion, const PixelRegion& animationRegion, size_t frameCount)
+    {
+        animation->frameCount   = *allocator->requestMemory<uint64_t>(static_cast<uint64_t>(frameCount));
+        animation->frames       = allocator->requestMemoryArray<AnimationFrame>(frameCount);
+
+        const glm::vec2 uvScale = {
+            static_cast<float>(animationRegion.width) / sampleRegion.width,
+            static_cast<float>(animationRegion.height) / sampleRegion.height
+        };
+
+        const glm::vec2 uvOffset = {
+            static_cast<float>(animationRegion.x) / sampleRegion.width,
+            static_cast<float>(animationRegion.y) / sampleRegion.height
+        };
+
+        for (size_t i = 0; i < frameCount; ++i)
+        {
+            *(animation->frames + i) = {
+                .uvScale    = uvScale,
+                .uvOffset   = uvOffset + static_cast<float>(i) * uvScale
+            };
+        }
+    }
+}
 
 namespace ZeroXGame
 {
@@ -97,6 +143,17 @@ namespace ZeroXGame
 
         levels->obstacles       = obstacles;
         levels->obstacleCount   = obstacleCount;
+
+        auto* jumpAnimation = ::allocateAnimations(allocator, 1);
+        ::allocateFrames(
+            allocator,
+            jumpAnimation,
+            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
+            { .x = 64, .y = 0, .width = 64, .height = 64 },
+            8);
+
+        jumpAnimation->name                 = "player_front_jump";
+        jumpAnimation->timeBetweenFrames    = 1.0f;
 
         return context;
     }

@@ -5,6 +5,7 @@
 #include <zerox_input.h>
 
 #include "zerox_game.h"
+#include "zerox_game_animation.h"
 #include "zerox_game_background.h"
 #include "zerox_game_collider.h"
 #include "zerox_game_enemy.h"
@@ -18,6 +19,7 @@ namespace ZeroXGame
     {
         std::span<ZeroXBridge::Input> input;
         std::span<Level> levels;
+        std::span<Animation> animations;
         std::span<Background> backgrounds;
         std::span<Player> players;
         std::span<Enemy> enemies;
@@ -46,6 +48,14 @@ namespace ZeroXGame
             cursor.step_array<Obstacle>(level->obstacleCount);
         }
 
+        const auto animations = memory.animations;
+        cursor.step_array<Animation>(animations.size());
+
+        for (size_t i = 0; i < animations.size(); ++i)
+        {
+            cursor.step_array<AnimationFrame>((animations.data() + i)->frameCount);
+        }
+
         return cursor.getOffset();
     }
 
@@ -72,6 +82,14 @@ namespace ZeroXGame
             gameMemoryCursor.step_array<Player>(level->playerCount);
             gameMemoryCursor.step_array<Enemy>(level->enemyCount);
             gameMemoryCursor.step_array<Obstacle>(level->obstacleCount);
+        }
+
+        result.animations = gameMemoryView.read_contiguous_array<Animation>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Animation>(result.animations.size());
+
+        for (size_t i = 0; i < result.animations.size(); ++i)
+        {
+            gameMemoryCursor.step_array<AnimationFrame>((result.animations.data() + i)->frameCount);
         }
 
         if (gameMemoryCursor.getOffset() >= gameMemorySpan.size())

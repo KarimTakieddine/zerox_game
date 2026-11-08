@@ -174,25 +174,25 @@ namespace ZeroXGame
 		{
 			auto* obstacle = obstacles.data() + i;
 
-			fixedUpdateObstacle(obstacle, deltaTime);
 			::savePhysicsState(obstacle->gameEntity.physicsState);
+			fixedUpdateObstacle(obstacle, deltaTime);
 		}
 
 		for (size_t i = 0; i < enemies.size(); ++i)
 		{
 			auto* enemy = enemies.data() + i;
 
+			::savePhysicsState(enemy->gameEntity.physicsState);
 			fixedUpdateEnemy(enemy, deltaTime);
 
 			// TODO(Karim): Resolve collisions against obstacles
-
-			::savePhysicsState(enemy->gameEntity.physicsState);
 		}
 
 		for (size_t i = 0; i < players.size(); ++i)
 		{
 			auto* player = players.data() + i;
 
+			::savePhysicsState(player->gameEntity.physicsState);
 			fixedUpdatePlayer(player, deltaTime);
 
 			const Collider* playerCollider = colliders.data() + i;
@@ -210,8 +210,6 @@ namespace ZeroXGame
 					playerCollider,
 					obstacleCollider);
 			}
-
-			::savePhysicsState(player->gameEntity.physicsState);
 		}
 	}
 
@@ -256,8 +254,6 @@ namespace ZeroXGame
 	{
 		assert(fixedDeltaTime != 0.0);
 
-		update(memory, deltaTime);
-
 		*physicsAccumulator += deltaTime;
 
 		auto& accumulator = *physicsAccumulator;
@@ -275,5 +271,7 @@ namespace ZeroXGame
 		{
 			updateCollider(colliders.data() + i);
 		}
+
+		update(memory, deltaTime);
 	}
 }
