@@ -22,25 +22,35 @@ namespace
         return allocator->requestMemoryArray<Animation>(count);
     }
 
-    void allocateFrames(ZeroXGame::GameAllocator* allocator, Animation* animation, const PixelRegion& sampleRegion, const PixelRegion& animationRegion, size_t frameCount)
+    void allocateFrames(ZeroXGame::GameAllocator* allocator, Animation* animation, const PixelRegion& sampleRegion, const PixelRegion& animationRegion, unsigned int frameWidth, unsigned int frameHeight)
     {
-        animation->frameCount   = *allocator->requestMemory<uint64_t>(static_cast<uint64_t>(frameCount));
-        animation->frames       = allocator->requestMemoryArray<AnimationFrame>(frameCount);
+        const unsigned int columnCount  { animationRegion.width / frameWidth };
+        const unsigned int rowCount     { animationRegion.height / frameHeight };
+
+        animation->frameCount   = *allocator->requestMemory<uint64_t>(static_cast<uint64_t>(rowCount * columnCount));
+        animation->frames       = allocator->requestMemoryArray<AnimationFrame>(animation->frameCount);
 
         const glm::vec2 uvScale = {
-            static_cast<float>(animationRegion.width) / sampleRegion.width,
-            static_cast<float>(animationRegion.height) / sampleRegion.height
+            static_cast<float>(frameWidth) / sampleRegion.width,
+            static_cast<float>(frameHeight) / sampleRegion.height
         };
 
-        for (size_t i = 0; i < frameCount; ++i)
+        const glm::vec2 uvOffset = {
+            static_cast<float>(animationRegion.x) / sampleRegion.width,
+            static_cast<float>(animationRegion.y) / sampleRegion.height
+        };
+
+        for (unsigned int row = 0; row < rowCount; ++row)
         {
-            *(animation->frames + i) = {
-                .uvScale = uvScale,
-                .uvOffset = {
-                    (static_cast<float>(animationRegion.x) / sampleRegion.width) + i * uvScale.x,
-                    0.0f
-                }
-            };
+            for (unsigned int column = 0; column < columnCount; ++column)
+            {
+                const size_t flattenedIndex = static_cast<size_t>(row * columnCount) + column;
+
+                *(animation->frames + flattenedIndex) = {
+                    .uvScale    = uvScale,
+                    .uvOffset   = uvOffset + glm::vec2{ column * uvScale.x, row * uvScale.y }
+                };
+            }
         }
     }
 }
@@ -142,23 +152,34 @@ namespace ZeroXGame
         levels->obstacles       = obstacles;
         levels->obstacleCount   = obstacleCount;
 
-        auto* animations = ::allocateAnimations(allocator, 2);
+        auto* animations = ::allocateAnimations(allocator, 3);
 
         auto* jumpAnimation = animations;
         ::allocateFrames(
             allocator,
             jumpAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 64, .y = 0, .width = 64, .height = 64 },
-            8);
+            { .x = 64, .y = 0, .width = 512, .height = 64 },
+            64,
+            64);
 
         auto* fallAnimation = animations + 1;
         ::allocateFrames(
             allocator,
             fallAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 576, .y = 0, .width = 64, .height = 64 },
-            5);
+            { .x = 576, .y = 0, .width = 320, .height = 64 },
+            64,
+            64);
+
+        auto* walkAnimation = animations + 2;
+        ::allocateFrames(
+            allocator,
+            walkAnimation,
+            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
+            { .x = 0, .y = 64, .width = 128, .height = 64 },
+            64,
+            64);
 
         return context;
     }

@@ -36,6 +36,10 @@ namespace ZeroXGame
 		MovementState previousMovementState	{ MovementState::NONE };
 		float initialJumpVelocity			{ 0.0f };
 		float jumpTimer						{ 2.0f };
+		float groundAcceleration			{ 0.5f };
+		float groundDecceleration			{ 1.0f };
+		float groundLerpFactor				{ 0.5f };
+		float airLerpFactor					{ 0.0f };
 	};
 
 	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);

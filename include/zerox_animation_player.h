@@ -41,14 +41,18 @@ namespace ZeroXGame
 			return false;
 		}
 
-		if (immediate)
+		if (immediate || !player.currentAnimation)
 		{
 			player.currentAnimation	= animation;
-			player.nextAnimation		= nullptr;
+			player.nextAnimation	= nullptr;
 			player.playTime			= 0.0;
 			player.currentFrame		= 0;
 
-			playFrame(material, animation->frames);
+			playFrame(
+				material,
+				animation->frames,
+				(player.flags & AnimationFlags::FLIP_X) == AnimationFlags::FLIP_X,
+				(player.flags & AnimationFlags::FLIP_Y) == AnimationFlags::FLIP_Y);
 		}
 		else
 		{
@@ -63,13 +67,20 @@ namespace ZeroXGame
 
 	inline constexpr void updateAnimationPlayer(ZeroXBridge::Material& material, AnimationPlayer& player, double deltaTime)
 	{
+		if (!player.currentAnimation)
+		{
+			return;
+		}
+
 		player.playTime += deltaTime;
 
 		if (player.playTime >= player.timeBetweenFrames)
 		{
 			size_t nextFrame = player.currentFrame;
 
-			if (nextFrame >= player.currentAnimation->frameCount - 1)
+			++nextFrame;
+
+			if (nextFrame > player.currentAnimation->frameCount - 1)
 			{
 				if ((player.flags & AnimationFlags::LOOP) == AnimationFlags::LOOP)
 				{
@@ -87,13 +98,16 @@ namespace ZeroXGame
 			}
 			else
 			{
-				++nextFrame;
+				playFrame(
+					material,
+					player.currentAnimation->frames + nextFrame,
+					(player.flags & AnimationFlags::FLIP_X) == AnimationFlags::FLIP_X,
+					(player.flags & AnimationFlags::FLIP_Y) == AnimationFlags::FLIP_Y);
 
-				playFrame(material, player.currentAnimation->frames + nextFrame);
+				player.currentFrame = nextFrame;
+
+				player.playTime = 0.0;
 			}
-
-			player.currentFrame	= nextFrame;
-			player.playTime		= 0.0;
 		}
 	}
 }

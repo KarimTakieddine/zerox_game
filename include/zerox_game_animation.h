@@ -18,10 +18,10 @@ namespace ZeroXGame
 		size_t frameCount		{ 0 };
 	};
 
-	inline constexpr void playFrame(ZeroXBridge::Material& material, const AnimationFrame* frame)
+	inline constexpr void playFrame(ZeroXBridge::Material& material, const AnimationFrame* frame, bool flipX, bool flipY)
 	{
-		material.uvOffset	= frame->uvOffset;
-		material.uvScale	= frame->uvScale;
+		material.uvOffset	= flipX ? glm::vec2{ frame->uvOffset.x + frame->uvScale.x, frame->uvOffset.y } : frame->uvOffset;
+		material.uvScale	= flipX ? glm::vec2{ -frame->uvScale.x, frame->uvScale.y } : frame->uvScale;
 	}
 
 	/*inline constexpr void animate(ZeroXBridge::Material& material, Animation* animation, float deltaTime)
