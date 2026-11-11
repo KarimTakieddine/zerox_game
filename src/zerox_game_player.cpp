@@ -9,26 +9,31 @@ namespace ZeroXGame
 	{
 		if (ZeroXBridge::isButtonPressedThisFrame(input->gamePad1, ZeroXBridge::Button::BUTTON_A))
 		{
-			playAnimation(player->gameEntity.renderEntity.material, animations);
+			player->animationPlayer.timeBetweenFrames = 0.125f;
+			playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations, true);
 		}
 
 		if ((player->currentMovementState & MovementState::FALLING) == MovementState::FALLING)
 		{
 			if ((player->previousMovementState & MovementState::FALLING) != MovementState::FALLING)
 			{
-				playAnimation(player->gameEntity.renderEntity.material, animations + 1);
+				player->animationPlayer.timeBetweenFrames = 0.25f;
+				playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 1, true);
 
 				player->previousMovementState |= MovementState::FALLING;
 			}
 		}
 
-		animate(player->gameEntity.renderEntity.material, animations, static_cast<float>(deltaTime));
-		animate(player->gameEntity.renderEntity.material, animations + 1, static_cast<float>(deltaTime));
+		updateAnimationPlayer(player->gameEntity.renderEntity.material, player->animationPlayer, deltaTime);
 	}
 
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input)
 	{
 		constexpr float gravity = { -9.84f };
+
+		float velocityX = 0.0f;
+
+		velocityX = input->gamePad1.leftStickInput.x * 10.0f;
 
 		float velocityY = 0.0f;
 
@@ -56,6 +61,22 @@ namespace ZeroXGame
 			player->currentMovementState |= MovementState::FALLING;
 		}
 
+		player->gameEntity.physicsState.currentPosition.x += velocityX * static_cast<float>(deltaTime);
 		player->gameEntity.physicsState.currentPosition.y += velocityY * static_cast<float>(deltaTime);
+	}
+
+	void onCollisionEnter(Player* player, const Collider* collider)
+	{
+		if (collider->normal.y > 0.0f)
+		{
+			player->currentMovementState	&= ~(MovementState::FALLING|MovementState::JUMPING);
+			player->initialJumpVelocity		= 0.0f;
+			player->jumpTimer				= 0.0f;
+		}
+	}
+
+	void onCollisionExit(Player* player, const Collider* collider)
+	{
+		
 	}
 }

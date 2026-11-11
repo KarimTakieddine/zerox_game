@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "zerox_game_entity.h"
+#include "zerox_animation_player.h"
+#include "zerox_game_collider.h"
 
 namespace ZeroXBridge { struct Input; }
 
@@ -30,6 +31,7 @@ namespace ZeroXGame
 	struct Player
 	{
 		GameEntity gameEntity;
+		AnimationPlayer animationPlayer;
 		MovementState currentMovementState	{ MovementState::NEUTRAL|MovementState::FALLING };
 		MovementState previousMovementState	{ MovementState::NONE };
 		float initialJumpVelocity			{ 0.0f };
@@ -38,4 +40,6 @@ namespace ZeroXGame
 
 	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
+	void onCollisionEnter(Player* player, const Collider* collider);
+	void onCollisionExit(Player* player, const Collider* collider);
 }

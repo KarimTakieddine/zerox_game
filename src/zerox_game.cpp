@@ -152,9 +152,6 @@ namespace ZeroXGame
             { .x = 64, .y = 0, .width = 64, .height = 64 },
             8);
 
-        jumpAnimation->name                 = "player_front_jump";
-        jumpAnimation->timeBetweenFrames    = 0.0625f;
-
         auto* fallAnimation = animations + 1;
         ::allocateFrames(
             allocator,
@@ -162,9 +159,6 @@ namespace ZeroXGame
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
             { .x = 576, .y = 0, .width = 64, .height = 64 },
             5);
-
-        fallAnimation->name                 = "player_front_fall";
-        fallAnimation->timeBetweenFrames    = 0.25f;
 
         return context;
     }

@@ -88,7 +88,7 @@ namespace
 		};
 	}
 
-	constexpr void resolveCollisions(ZeroXGame::PhysicsState& lhsState, ZeroXGame::PhysicsState& rhsState, const ZeroXGame::Collider* lhs, const ZeroXGame::Collider* rhs)
+	constexpr bool resolveCollisions(ZeroXGame::PhysicsState& lhsState, ZeroXGame::PhysicsState& rhsState, const ZeroXGame::Collider* lhs, const ZeroXGame::Collider* rhs)
 	{
 		AABB lhsAABB = getAABB(lhsState, lhs);
 		AABB rhsAABB = getAABB(rhsState, rhs);
@@ -130,6 +130,8 @@ namespace
 			lhsState.currentPosition +=
 				*std::min_element(std::begin(overlaps), std::end(overlaps)) * rhs->normal;
 		}
+
+		return colliding;
 	}
 }
 
@@ -204,11 +206,18 @@ namespace ZeroXGame
 				const Collider* obstacleCollider =
 					colliders.data() + enemies.size() + players.size() + j;
 
-				::resolveCollisions(
+				if (::resolveCollisions(
 					player->gameEntity.physicsState,
 					obstacle->gameEntity.physicsState,
 					playerCollider,
-					obstacleCollider);
+					obstacleCollider))
+				{
+					onCollisionEnter(player, obstacleCollider);
+				}
+				else
+				{
+					onCollisionExit(player, obstacleCollider);
+				}
 			}
 		}
 	}
