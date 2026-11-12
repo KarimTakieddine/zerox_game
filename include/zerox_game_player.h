@@ -28,7 +28,7 @@ namespace ZeroXGame
 	inline constexpr MovementState& operator&=(MovementState& a, MovementState b) { a = a & b; return a; }
 	inline constexpr MovementState operator~(MovementState m) { return static_cast<MovementState>(~static_cast<std::underlying_type_t<MovementState>>(m)); }
 
-	struct Player
+	struct alignas(16) Player
 	{
 		GameEntity gameEntity;
 		AnimationPlayer animationPlayer;
@@ -40,6 +40,10 @@ namespace ZeroXGame
 		float groundDecceleration			{ 1.0f };
 		float groundLerpFactor				{ 0.5f };
 		float airLerpFactor					{ 0.0f };
+		float velocityX						{ 0.0f };
+		float maxVelocityX					{ 5.0f };
+		float fallGravityFactor				{ 1.0f };
+		float minVelocityY					{ -10.0f };
 	};
 
 	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);

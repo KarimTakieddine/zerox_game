@@ -50,21 +50,19 @@ namespace ZeroXGame
 	{
 		// Horizontal velocity
 
-		float velocityX = 0.0f;
+		const float inputX = input->gamePad1.leftStickInput.x;
 
-		constexpr float maxVelocityX = 5.0f;
+		player->groundLerpFactor += inputX * player->groundAcceleration * static_cast<float>(deltaTime);
 
-		player->groundLerpFactor += input->gamePad1.leftStickInput.x * player->groundAcceleration * deltaTime;
-		player->groundLerpFactor = glm::clamp(player->groundLerpFactor, -1.0f, 1.0f);
+		player->velocityX			= -player->maxVelocityX * (1.0f - player->groundLerpFactor) + player->maxVelocityX * player->groundLerpFactor;
+		player->groundLerpFactor	= glm::clamp(player->groundLerpFactor, 0.0f, 1.0f);
 
-		velocityX = maxVelocityX * (-1.0f * (1.0f - player->groundLerpFactor) + player->groundLerpFactor);
-
-		if (velocityX < 0.0f)
+		if (player->velocityX < 0.0f)
 		{
 			player->currentMovementState &= ~(MovementState::RIGHT | MovementState::NEUTRAL);
 			player->currentMovementState |= MovementState::LEFT;
 		}
-		else if (velocityX > 0.0f)
+		else if (player->velocityX > 0.0f)
 		{
 			player->currentMovementState &= ~(MovementState::LEFT | MovementState::NEUTRAL);
 			player->currentMovementState |= MovementState::RIGHT;
@@ -105,7 +103,7 @@ namespace ZeroXGame
 			player->currentMovementState |= MovementState::FALLING;
 		}
 
-		player->gameEntity.physicsState.currentPosition.x += velocityX * static_cast<float>(deltaTime);
+		player->gameEntity.physicsState.currentPosition.x += player->velocityX * static_cast<float>(deltaTime);
 		player->gameEntity.physicsState.currentPosition.y += velocityY * static_cast<float>(deltaTime);
 	}
 
