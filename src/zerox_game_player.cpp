@@ -11,7 +11,7 @@ namespace ZeroXGame
 		{
 			if ((player->previousMovementState & MovementState::JUMPING) != MovementState::JUMPING)
 			{
-				player->animationPlayer.timeBetweenFrames = 0.125f;
+				player->animationPlayer.timeBetweenFrames = 0.125;
 				player->animationPlayer.flags &= ~AnimationFlags::LOOP;
 				playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations, true);
 			}
@@ -20,14 +20,14 @@ namespace ZeroXGame
 		{
 			player->animationPlayer.flags &= ~AnimationFlags::FLIP_X;
 
-			player->animationPlayer.timeBetweenFrames = 0.0625f;
+			player->animationPlayer.timeBetweenFrames = 0.0625;
 			playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 2, false);
 		}
 		else if ((player->currentMovementState & MovementState::RIGHT) == MovementState::RIGHT)
 		{
 			player->animationPlayer.flags |= AnimationFlags::FLIP_X;
 
-			player->animationPlayer.timeBetweenFrames = 0.0625f;
+			player->animationPlayer.timeBetweenFrames = 0.0625;
 			playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 2, false);
 		}
 
@@ -35,7 +35,7 @@ namespace ZeroXGame
 		{
 			if ((player->previousMovementState & MovementState::FALLING) != MovementState::FALLING)
 			{
-				player->animationPlayer.timeBetweenFrames = 0.2f;
+				player->animationPlayer.timeBetweenFrames = 0.2;
 				player->animationPlayer.flags &= ~AnimationFlags::LOOP;
 				playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 1, false);
 			}
