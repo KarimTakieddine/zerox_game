@@ -20,14 +20,14 @@ namespace ZeroXGame
 		{
 			player->animationPlayer.flags &= ~AnimationFlags::FLIP_X;
 
-			player->animationPlayer.timeBetweenFrames = 0.35f;
+			player->animationPlayer.timeBetweenFrames = 0.0625f;
 			playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 2, false);
 		}
 		else if ((player->currentMovementState & MovementState::RIGHT) == MovementState::RIGHT)
 		{
 			player->animationPlayer.flags |= AnimationFlags::FLIP_X;
 
-			player->animationPlayer.timeBetweenFrames = 0.35f;
+			player->animationPlayer.timeBetweenFrames = 0.0625f;
 			playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations + 2, false);
 		}
 

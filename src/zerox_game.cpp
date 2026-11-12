@@ -177,7 +177,7 @@ namespace ZeroXGame
             allocator,
             walkAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 0, .y = 64, .width = 128, .height = 64 },
+            { .x = 0, .y = 64, .width = 448, .height = 64 },
             64,
             64);
 
