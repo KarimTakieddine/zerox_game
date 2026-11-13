@@ -52,10 +52,32 @@ namespace ZeroXGame
 
 		const float inputX = input->gamePad1.leftStickInput.x;
 
-		player->groundLerpFactor += inputX * player->groundAcceleration * static_cast<float>(deltaTime);
+		if (inputX != 0.0f)
+		{
+			player->groundLerpFactor += inputX * player->groundAcceleration * static_cast<float>(deltaTime);
+			player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.0f, 1.0f);
+		}
+		else
+		{
+			const float direction = glm::sign(player->velocityX);
 
-		player->velocityX			= -player->maxVelocityX * (1.0f - player->groundLerpFactor) + player->maxVelocityX * player->groundLerpFactor;
-		player->groundLerpFactor	= glm::clamp(player->groundLerpFactor, 0.0f, 1.0f);
+			if (direction < 0.0f)
+			{
+				player->groundLerpFactor += player->groundDecceleration * static_cast<float>(deltaTime);
+				player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.0f, 0.5f);
+			}
+			else if (direction > 0.0f)
+			{
+				player->groundLerpFactor -= player->groundDecceleration * static_cast<float>(deltaTime);
+				player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.5f, 1.0f);
+			}
+			else
+			{
+				player->groundLerpFactor = 0.5f;
+			}
+		}
+
+		player->velocityX = -player->maxVelocityX * (1.0f - player->groundLerpFactor) + player->maxVelocityX * player->groundLerpFactor;
 
 		if (player->velocityX < 0.0f)
 		{
