@@ -159,7 +159,7 @@ namespace ZeroXGame
             allocator,
             jumpAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 64, .y = 0, .width = 512, .height = 64 },
+            { .x = 0, .y = 64, .width = 512, .height = 64 },
             64,
             64);
 
@@ -168,7 +168,7 @@ namespace ZeroXGame
             allocator,
             fallAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 576, .y = 0, .width = 320, .height = 64 },
+            { .x = 832, .y = 0, .width = 192, .height = 64 },
             64,
             64);
 
@@ -177,7 +177,7 @@ namespace ZeroXGame
             allocator,
             walkAnimation,
             { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 0, .y = 64, .width = 448, .height = 64 },
+            { .x = 320, .y = 0, .width = 320, .height = 64 },
             64,
             64);
 

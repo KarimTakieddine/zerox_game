@@ -11,7 +11,7 @@ namespace ZeroXGame
 		{
 			if ((player->previousMovementState & MovementState::JUMPING) != MovementState::JUMPING)
 			{
-				player->animationPlayer.timeBetweenFrames = 0.125;
+				player->animationPlayer.timeBetweenFrames = 0.0625;
 				player->animationPlayer.flags &= ~AnimationFlags::LOOP;
 				playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations, true);
 			}
