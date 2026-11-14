@@ -38,12 +38,16 @@ namespace ZeroXGame
 		float jumpTimer						{ 2.0f };
 		float groundAcceleration			{ 3.0f };
 		float airAcceleration				{ 2.0f };
-		float groundDecceleration			{ 0.5f };
+		float groundDecceleration			{ 4.0f };
 		float groundLerpFactor				{ 0.5f };
+		float airLerpFactor					{ 0.5f };
 		float velocityX						{ 0.0f };
-		float maxVelocityX					{ 8.5f };
+		float velocityY						{ 0.0f };
+		float maxGroundVelocityX			{ 8.5f };
+		float maxAirVelocityX				{ 12.5f };
 		float fallGravityFactor				{ 1.0f };
 		float minVelocityY					{ -10.0f };
+		float turnaroundAcceleration		{ 0.0f };
 	};
 
 	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);

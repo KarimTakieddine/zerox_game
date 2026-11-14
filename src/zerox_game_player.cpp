@@ -54,28 +54,40 @@ namespace ZeroXGame
 
 		if (inputX != 0.0f)
 		{
-			player->groundLerpFactor +=
-				inputX *
-				((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING ? player->airAcceleration : player->groundAcceleration) *
-				static_cast<float>(deltaTime);
+			if ((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING)
+			{
+				player->airLerpFactor += inputX * player->airAcceleration * static_cast<float>(deltaTime);
+			}
+			else
+			{
+				player->groundLerpFactor += inputX * player->groundAcceleration * static_cast<float>(deltaTime);
+			}
 
-			player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.0f, 1.0f);
+			player->groundLerpFactor	= glm::clamp(player->groundLerpFactor, 0.0f, 1.0f);
+			player->airLerpFactor		= glm::clamp(player->airLerpFactor, 0.0f, 1.0f);
 		}
 		else if ((player->currentMovementState & MovementState::JUMPING) != MovementState::JUMPING)
 		{
 			if (player->groundLerpFactor > 0.5f)
 			{
-				player->groundLerpFactor -= static_cast<float>(deltaTime);
+				player->groundLerpFactor -= player->groundDecceleration * static_cast<float>(deltaTime);
 				player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.5f, 1.0f);
 			}
 			else
 			{
-				player->groundLerpFactor += static_cast<float>(deltaTime);
+				player->groundLerpFactor += player->groundDecceleration * static_cast<float>(deltaTime);
 				player->groundLerpFactor = glm::clamp(player->groundLerpFactor, 0.0f, 0.5f);
 			}
 		}
 
-		player->velocityX = -player->maxVelocityX * (1.0f - player->groundLerpFactor) + player->maxVelocityX * player->groundLerpFactor;
+		if ((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING)
+		{
+			player->velocityX = -player->maxAirVelocityX * (1.0f - player->airLerpFactor) + player->maxAirVelocityX * player->airLerpFactor;
+		}
+		else
+		{
+			player->velocityX = -player->maxGroundVelocityX * (1.0f - player->groundLerpFactor) + player->maxGroundVelocityX * player->groundLerpFactor;
+		}
 
 		if (player->velocityX < 0.0f)
 		{
@@ -108,6 +120,7 @@ namespace ZeroXGame
 				player->currentMovementState	&= ~MovementState::FALLING;
 				player->previousMovementState	&= ~MovementState::FALLING;
 				player->currentMovementState	|= MovementState::JUMPING;
+				player->airLerpFactor			= player->groundLerpFactor;
 			}
 		}
 
@@ -136,6 +149,11 @@ namespace ZeroXGame
 	{
 		if (collider->normal.y > 0.0f)
 		{
+			if ((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING)
+			{
+				player->groundLerpFactor = player->airLerpFactor;
+			}
+
 			player->currentMovementState	&= ~(MovementState::FALLING|MovementState::JUMPING);
 			player->initialJumpVelocity		= 0.0f;
 			player->jumpTimer				= 0.0f;
