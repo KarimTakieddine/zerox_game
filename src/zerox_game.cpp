@@ -64,6 +64,11 @@ namespace ZeroXGame
     using ZeroXBridge::EntityReadDescriptor;
     using ZeroXBridge::RenderDescriptor;
 
+    void setEngineFunctions(const ZeroXBridge::EngineFunctions* engineFunctions)
+    {
+        globalEngineFuncions = engineFunctions;
+    }
+
     ZeroXBridge::GameContext initializeGame(GameAllocator* allocator, const ZeroXBridge::EngineFunctions* engineFunctions)
     {
         ZeroXBridge::GameContext context = { .input = allocator->requestMemory<ZeroXBridge::Input>() };
@@ -73,7 +78,7 @@ namespace ZeroXGame
             return context;
         }
 
-        globalEngineFuncions = engineFunctions;
+        setEngineFunctions(engineFunctions);
 
         if (!isValid(globalEngineFuncions))
         {
