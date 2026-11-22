@@ -54,17 +54,6 @@ namespace
             }
         }
     }
-
-    constexpr bool isValid(const ZeroXBridge::EngineFunctions* engineFunctions)
-    {
-        return
-            engineFunctions->getFileSize            &&
-            engineFunctions->readFile               &&
-            engineFunctions->allocateTexture        &&
-            engineFunctions->allocateTextureArray   &&
-            engineFunctions->allocateAudio          &&
-            engineFunctions->playAudio;
-    }
 }
 
 namespace ZeroXGame
@@ -86,7 +75,7 @@ namespace ZeroXGame
 
         globalEngineFuncions = engineFunctions;
 
-        if (!::isValid(globalEngineFuncions))
+        if (!isValid(globalEngineFuncions))
         {
             return context;
         }
