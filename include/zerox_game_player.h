@@ -37,7 +37,7 @@ namespace ZeroXGame
 		float initialJumpVelocity			{ 0.0f };
 		float jumpTimer						{ 2.0f };
 		float groundAcceleration			{ 3.0f };
-		float airAcceleration				{ 2.0f };
+		float airAcceleration				{ 3.0f };
 		float groundDecceleration			{ 4.0f };
 		float groundLerpFactor				{ 0.5f };
 		float airLerpFactor					{ 0.5f };
