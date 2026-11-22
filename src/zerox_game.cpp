@@ -1,5 +1,6 @@
 #include "zerox_game.h"
 #include "zerox_game_animation.h"
+#include "zerox_game_globals.h"
 #include "zerox_game_logic.h"
 
 namespace
@@ -53,6 +54,17 @@ namespace
             }
         }
     }
+
+    constexpr bool isValid(const ZeroXBridge::EngineFunctions* engineFunctions)
+    {
+        return
+            engineFunctions->getFileSize            &&
+            engineFunctions->readFile               &&
+            engineFunctions->allocateTexture        &&
+            engineFunctions->allocateTextureArray   &&
+            engineFunctions->allocateAudio          &&
+            engineFunctions->playAudio;
+    }
 }
 
 namespace ZeroXGame
@@ -63,11 +75,18 @@ namespace ZeroXGame
     using ZeroXBridge::EntityReadDescriptor;
     using ZeroXBridge::RenderDescriptor;
 
-    ZeroXBridge::GameContext initializeGame(GameAllocator* allocator)
+    ZeroXBridge::GameContext initializeGame(GameAllocator* allocator, const ZeroXBridge::EngineFunctions* engineFunctions)
     {
         ZeroXBridge::GameContext context = { .input = allocator->requestMemory<ZeroXBridge::Input>() };
 
-        if (!allocator)
+        if (!allocator || !engineFunctions)
+        {
+            return context;
+        }
+
+        globalEngineFuncions = engineFunctions;
+
+        if (!::isValid(globalEngineFuncions))
         {
             return context;
         }

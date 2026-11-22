@@ -1,6 +1,7 @@
 #include <zerox_input.h>
 
 #include "zerox_game_animation.h"
+#include "zerox_game_globals.h"
 #include "zerox_game_player.h"
 
 namespace ZeroXGame
