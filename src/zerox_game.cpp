@@ -80,7 +80,7 @@ namespace ZeroXGame
 
         setEngineFunctions(engineFunctions);
 
-        if (!isValid(globalEngineFuncions))
+        if (!ZeroXBridge::isValid(globalEngineFuncions))
         {
             return context;
         }
