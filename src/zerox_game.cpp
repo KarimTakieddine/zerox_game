@@ -69,7 +69,7 @@ namespace ZeroXGame
 
     void setEngineFunctions(const ZeroXBridge::EngineFunctions* engineFunctions)
     {
-        globalEngineFuncions = engineFunctions;
+        globalEngineFunctions = engineFunctions;
     }
 
     ZeroXBridge::GameContext initializeGame(GameAllocator* allocator, const ZeroXBridge::EngineFunctions* engineFunctions)
@@ -83,7 +83,7 @@ namespace ZeroXGame
 
         setEngineFunctions(engineFunctions);
 
-        if (!ZeroXBridge::isValid(globalEngineFuncions))
+        if (!ZeroXBridge::isValid(globalEngineFunctions))
         {
             return context;
         }
@@ -95,6 +95,7 @@ namespace ZeroXGame
         ZeroXBridge::Texture theMegaTexture = {
             .width      = 1024,
             .height     = 1024,
+            .format     = ZeroXBridge::TextureFormat::RGBA,
             .wrapModeS  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
             .wrapModeT  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
             .minFilter  = ZeroXBridge::TextureFilter::NEAREST,
@@ -111,6 +112,7 @@ namespace ZeroXGame
         ZeroXBridge::Texture backgroundTexture = {
             .width		= 1920,
 			.height		= 1080,
+            .format     = ZeroXBridge::TextureFormat::RGBA,
 			.wrapModeS	= ZeroXBridge::TextureWrapMode::REPEAT,
 			.wrapModeT	= ZeroXBridge::TextureWrapMode::REPEAT,
 			.minFilter	= ZeroXBridge::TextureFilter::LINEAR,

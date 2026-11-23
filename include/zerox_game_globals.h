@@ -4,5 +4,5 @@
 
 namespace ZeroXGame
 {
-	inline const ZeroXBridge::EngineFunctions* globalEngineFuncions{ nullptr };
+	inline const ZeroXBridge::EngineFunctions* globalEngineFunctions{ nullptr };
 }
