@@ -1,6 +1,7 @@
 #include <zerox_input.h>
 
 #include "zerox_game_animation.h"
+#include "zerox_game_globals.h"
 #include "zerox_game_player.h"
 
 namespace ZeroXGame
@@ -11,6 +12,8 @@ namespace ZeroXGame
 		{
 			if ((player->previousMovementState & MovementState::JUMPING) != MovementState::JUMPING)
 			{
+				globalEngineFunctions->playAudio(globalEngineFunctions->handle, 0);
+
 				player->animationPlayer.timeBetweenFrames = 0.0625;
 				player->animationPlayer.flags &= ~AnimationFlags::LOOP;
 				playAnimation(player->gameEntity.renderEntity.material, player->animationPlayer, animations, true);

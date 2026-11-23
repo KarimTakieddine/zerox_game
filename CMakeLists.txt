@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20 REQUIRED)
 set(PROJECT_NAME zerox_game)
 set(INCLUDE_DIR include)
 set(SRC_DIR src)
+set(AUDIO_DIR audio)
+set(TEXTURES_DIR textures)
 set(ENGINE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../zerox_engine")
 
 if (NOT DEFINED MEMORY_READER_DIR)
@@ -49,3 +51,12 @@ add_custom_command(TARGET ${PROJECT_NAME}
     COMMENT "Removing existing library copies..."
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+add_custom_target(Assets ALL)
+
+add_custom_command(TARGET Assets POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${AUDIO_DIR}" $<TARGET_FILE_DIR:${PROJECT_NAME}>/${AUDIO_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${TEXTURES_DIR}" $<TARGET_FILE_DIR:${PROJECT_NAME}>/${TEXTURES_DIR}
+    VERBATIM)
+
+add_dependencies(${PROJECT_NAME} Assets)

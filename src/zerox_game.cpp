@@ -1,5 +1,9 @@
+#include <zerox_audio.h>
+#include <zerox_texture.h>
+
 #include "zerox_game.h"
 #include "zerox_game_animation.h"
+#include "zerox_game_globals.h"
 #include "zerox_game_logic.h"
 
 namespace
@@ -63,14 +67,65 @@ namespace ZeroXGame
     using ZeroXBridge::EntityReadDescriptor;
     using ZeroXBridge::RenderDescriptor;
 
-    ZeroXBridge::GameContext initializeGame(GameAllocator* allocator)
+    void setEngineFunctions(const ZeroXBridge::EngineFunctions* engineFunctions)
+    {
+        globalEngineFunctions = engineFunctions;
+    }
+
+    ZeroXBridge::GameContext initializeGame(GameAllocator* allocator, const ZeroXBridge::EngineFunctions* engineFunctions)
     {
         ZeroXBridge::GameContext context = { .input = allocator->requestMemory<ZeroXBridge::Input>() };
 
-        if (!allocator)
+        if (!allocator || !engineFunctions)
         {
             return context;
         }
+
+        setEngineFunctions(engineFunctions);
+
+        if (!ZeroXBridge::isValid(globalEngineFunctions))
+        {
+            return context;
+        }
+
+        constexpr const char* textureFiles[1] = {
+            "./textures/the_mega_texture.png"
+        };
+
+        ZeroXBridge::Texture theMegaTexture = {
+            .width      = 1024,
+            .height     = 1024,
+            .format     = ZeroXBridge::TextureFormat::RGBA,
+            .wrapModeS  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
+            .wrapModeT  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
+            .minFilter  = ZeroXBridge::TextureFilter::NEAREST,
+            .magFilter  = ZeroXBridge::TextureFilter::NEAREST
+        };
+
+        engineFunctions->uploadTextures(engineFunctions->handle, textureFiles, &theMegaTexture, 1);
+
+        constexpr const char* textureArrayFiles[2] = {
+            "./textures/test_background_0.png",
+            "./textures/test_background_1.png"
+        };
+
+        ZeroXBridge::Texture backgroundTexture = {
+            .width		= 1920,
+			.height		= 1080,
+            .format     = ZeroXBridge::TextureFormat::RGBA,
+			.wrapModeS	= ZeroXBridge::TextureWrapMode::REPEAT,
+			.wrapModeT	= ZeroXBridge::TextureWrapMode::REPEAT,
+			.minFilter	= ZeroXBridge::TextureFilter::LINEAR,
+			.magFilter	= ZeroXBridge::TextureFilter::LINEAR
+        };
+
+        engineFunctions->uploadTextureArray(engineFunctions->handle, textureArrayFiles, 2, &backgroundTexture, 1);
+
+        ZeroXBridge::AudioSound characterJumpSound{
+            .type   = ZeroXBridge::SoundType::SOUND_EFFECT,
+            .flags  = ZeroXBridge::SoundFlags::NONE
+        };
+        engineFunctions->allocateAudio(engineFunctions->handle, "./audio/character_jump.mp3", &characterJumpSound);
 
         const auto levelCount   = *allocator->requestMemory<uint64_t>(1);
         auto* levels            = allocator->requestMemoryArray<Level>(1);

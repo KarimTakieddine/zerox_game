@@ -3,3 +3,10 @@
 **/.vs/
 
 **/*Zone\.Identifier
+
+**/*.png
+
+!textures/the_mega_texture.png
+!textures/test_background_0.png
+!textures/test_background_1.png
+
