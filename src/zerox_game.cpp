@@ -1,3 +1,4 @@
+#include <zerox_audio.h>
 #include <zerox_texture.h>
 
 #include "zerox_game.h"
@@ -117,6 +118,12 @@ namespace ZeroXGame
         };
 
         engineFunctions->uploadTextureArray(engineFunctions->handle, textureArrayFiles, 2, &backgroundTexture, 1);
+
+        ZeroXBridge::AudioSound characterJumpSound{
+            .type   = ZeroXBridge::SoundType::SOUND_EFFECT,
+            .flags  = ZeroXBridge::SoundFlags::NONE
+        };
+        engineFunctions->allocateAudio(engineFunctions->handle, "./audio/character_jump.mp3", &characterJumpSound);
 
         const auto levelCount   = *allocator->requestMemory<uint64_t>(1);
         auto* levels            = allocator->requestMemoryArray<Level>(1);
