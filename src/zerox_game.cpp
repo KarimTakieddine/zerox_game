@@ -1,3 +1,5 @@
+#include <zerox_texture.h>
+
 #include "zerox_game.h"
 #include "zerox_game_animation.h"
 #include "zerox_game_globals.h"
@@ -84,6 +86,37 @@ namespace ZeroXGame
         {
             return context;
         }
+
+        constexpr const char* textureFiles[1] = {
+            "./textures/the_mega_texture.png"
+        };
+
+        ZeroXBridge::Texture theMegaTexture = {
+            .width      = 1024,
+            .height     = 1024,
+            .wrapModeS  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
+            .wrapModeT  = ZeroXBridge::TextureWrapMode::CLAMP_TO_EDGE,
+            .minFilter  = ZeroXBridge::TextureFilter::NEAREST,
+            .magFilter  = ZeroXBridge::TextureFilter::NEAREST
+        };
+
+        engineFunctions->uploadTextures(engineFunctions->handle, textureFiles, &theMegaTexture, 1);
+
+        constexpr const char* textureArrayFiles[2] = {
+            "./textures/test_background_0.png",
+            "./textures/test_background_1.png"
+        };
+
+        ZeroXBridge::Texture backgroundTexture = {
+            .width		= 1920,
+			.height		= 1080,
+			.wrapModeS	= ZeroXBridge::TextureWrapMode::REPEAT,
+			.wrapModeT	= ZeroXBridge::TextureWrapMode::REPEAT,
+			.minFilter	= ZeroXBridge::TextureFilter::LINEAR,
+			.magFilter	= ZeroXBridge::TextureFilter::LINEAR
+        };
+
+        engineFunctions->uploadTextureArray(engineFunctions->handle, textureArrayFiles, 2, &backgroundTexture, 1);
 
         const auto levelCount   = *allocator->requestMemory<uint64_t>(1);
         auto* levels            = allocator->requestMemoryArray<Level>(1);
