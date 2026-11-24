@@ -1,6 +1,7 @@
 #include <zerox_input.h>
 
 #include "zerox_game_animation.h"
+#include "zerox_game_collider.h"
 #include "zerox_game_globals.h"
 #include "zerox_game_player.h"
 
@@ -148,9 +149,9 @@ namespace ZeroXGame
 		player->gameEntity.physicsState.currentPosition.y += velocityY * static_cast<float>(deltaTime);
 	}
 
-	void onCollisionEnter(Player* player, const Collider* collider)
+	void onCollisionEnter(Player* player, const Collider2D& collider)
 	{
-		if (collider->normal.y > 0.0f)
+		if (collider.normal.y > 0.0f)
 		{
 			if ((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING)
 			{
@@ -163,7 +164,7 @@ namespace ZeroXGame
 		}
 	}
 
-	void onCollisionExit(Player* player, const Collider* collider)
+	void onCollisionExit(Player* player, const Collider2D& collider)
 	{
 		
 	}

@@ -2,20 +2,16 @@
 
 #include <cstddef>
 
-#include <bump_allocator.hpp>
-
 #include <zerox_game_context.h>
 #include <zerox_render_descriptor.h>
 
 #include "zerox_game_api.h"
+#include "zerox_game_constants.h"
 
 namespace ZeroXBridge { struct EngineFunctions; }
 
 namespace ZeroXGame
 {
-    constexpr size_t GAME_MEMORY_ALIGNMENT = 16;
-
-    using GameAllocator = BumpAllocator<GAME_MEMORY_ALIGNMENT>;
     using ZeroXBridge::RenderDescriptor;
 
     extern "C" ZEROX_GAME_API void setEngineFunctions(const ZeroXBridge::EngineFunctions* engineFunctions);

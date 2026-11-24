@@ -31,6 +31,7 @@ namespace ZeroXGame
 	struct alignas(16) Player
 	{
 		GameEntity gameEntity;
+		Collider2D collider;
 		AnimationPlayer animationPlayer;
 		MovementState currentMovementState	{ MovementState::NEUTRAL|MovementState::FALLING };
 		MovementState previousMovementState	{ MovementState::NONE };
@@ -52,6 +53,6 @@ namespace ZeroXGame
 
 	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
-	void onCollisionEnter(Player* player, const Collider* collider);
-	void onCollisionExit(Player* player, const Collider* collider);
+	void onCollisionEnter(Player* player, const Collider2D& collider);
+	void onCollisionExit(Player* player, const Collider2D& collider);
 }

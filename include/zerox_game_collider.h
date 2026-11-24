@@ -6,19 +6,25 @@
 
 namespace ZeroXGame
 {
-	struct alignas(16) Collider
+	struct alignas(16) Collider2D
 	{
-		GameEntity gameEntity;
 		glm::vec2 size	{ 1.0f, 1.0f };
 		glm::vec2 offset{ 0.0f, 0.0f };
 		glm::vec2 normal{ 0.0f, 0.0f };
-		ZeroXBridge::Transform* target;
+		glm::vec2 center{ 0.0f, 0.0f };
 	};
 
-	inline void updateCollider(Collider* collider)
+	struct alignas(16) Collider2DEntity
 	{
-		collider->gameEntity.renderEntity.transform = *collider->target;
+		GameEntity gameEntity;
+		Collider2D* collider2D			{ nullptr };
+		ZeroXBridge::Transform* target	{ nullptr };
+	};
 
-		// TODO(Karim): Account for offset!
-	}
+	//inline void updateCollider(Collider* collider)
+	//{
+	//	collider->gameEntity.renderEntity.transform = *collider->target;
+
+	//	// TODO(Karim): Account for offset!
+	//}
 }

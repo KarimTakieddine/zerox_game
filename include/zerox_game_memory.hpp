@@ -4,14 +4,14 @@
 #include <memory_cursor.hpp>
 #include <zerox_input.h>
 
-#include "zerox_game.h"
+#include "zerox_enemy_types.h"
 #include "zerox_game_animation.h"
 #include "zerox_game_background.h"
 #include "zerox_game_collider.h"
-#include "zerox_game_enemy.h"
-#include "zerox_game_obstacle.h"
+#include "zerox_game_constants.h"
 #include "zerox_game_player.h"
 #include "zerox_game_level.h"
+#include "zerox_obstacle_types.h"
 
 namespace ZeroXGame
 {
@@ -22,9 +22,11 @@ namespace ZeroXGame
         std::span<Animation> animations;
         std::span<Background> backgrounds;
         std::span<Player> players;
-        std::span<Enemy> enemies;
+        std::span<Skull> skulls;
+        std::span<Mouns> mounsSpan;
         std::span<Obstacle> obstacles;
-        std::span<Collider> colliders;
+        std::span<MovingPlatform> movingPlatforms;
+        std::span<Collider2DEntity> collider2DEntities;
         std::span<uint64_t> entitySectionCount;
         std::span<std::byte> entitySectionSpan;
     };
@@ -44,8 +46,10 @@ namespace ZeroXGame
 
             cursor.step_array<Background>(level->backgroundCount);
             cursor.step_array<Player>(level->playerCount);
-            cursor.step_array<Enemy>(level->enemyCount);
+            cursor.step_array<Skull>(level->skullCount);
+            cursor.step_array<Mouns>(level->mounsCount);
             cursor.step_array<Obstacle>(level->obstacleCount);
+            cursor.step_array<MovingPlatform>(level->movingPlatformCount);
         }
 
         const auto animations = memory.animations;
@@ -80,8 +84,10 @@ namespace ZeroXGame
 
             gameMemoryCursor.step_array<Background>(level->backgroundCount);
             gameMemoryCursor.step_array<Player>(level->playerCount);
-            gameMemoryCursor.step_array<Enemy>(level->enemyCount);
+            gameMemoryCursor.step_array<Skull>(level->skullCount);
+            gameMemoryCursor.step_array<Mouns>(level->mounsCount);
             gameMemoryCursor.step_array<Obstacle>(level->obstacleCount);
+            gameMemoryCursor.step_array<MovingPlatform>(level->movingPlatformCount);
         }
 
         result.animations = gameMemoryView.read_contiguous_array<Animation>(gameMemoryCursor.getOffset());
@@ -103,14 +109,20 @@ namespace ZeroXGame
         result.players = gameMemoryView.read_contiguous_array<Player>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Player>(result.players.size());
 
-        result.enemies = gameMemoryView.read_contiguous_array<Enemy>(gameMemoryCursor.getOffset());
-        gameMemoryCursor.step_array<Enemy>(result.enemies.size());
+        result.skulls = gameMemoryView.read_contiguous_array<Skull>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Skull>(result.skulls.size());
+
+        result.mounsSpan = gameMemoryView.read_contiguous_array<Mouns>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Mouns>(result.mounsSpan.size());
 
         result.obstacles = gameMemoryView.read_contiguous_array<Obstacle>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step_array<Obstacle>(result.obstacles.size());
 
-        result.colliders = gameMemoryView.read_contiguous_array<Collider>(gameMemoryCursor.getOffset());
-        gameMemoryCursor.step_array<Collider>(result.colliders.size());
+        result.movingPlatforms = gameMemoryView.read_contiguous_array<MovingPlatform>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<MovingPlatform>(result.movingPlatforms.size());
+
+        result.collider2DEntities = gameMemoryView.read_contiguous_array<Collider2DEntity>(gameMemoryCursor.getOffset());
+        gameMemoryCursor.step_array<Collider2DEntity>(result.collider2DEntities.size());
 
         result.entitySectionCount = gameMemoryView.read_object<uint64_t>(gameMemoryCursor.getOffset());
         gameMemoryCursor.step<uint64_t>();

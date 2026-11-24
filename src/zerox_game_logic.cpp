@@ -29,14 +29,14 @@ namespace
 		glm::vec2 bottomLeft	{ 0.0f, 0.0f };
 	};
 
-	constexpr AABB getAABB(ZeroXGame::PhysicsState& state, const ZeroXGame::Collider* collider)
+	constexpr AABB getAABB(ZeroXGame::PhysicsState& state, const ZeroXGame::Collider2D& collider)
 	{
-		const glm::vec2& colliderSize = collider->size;
+		const glm::vec2& colliderSize = collider.size;
 
 		const float halfWidth	= colliderSize.x * 0.5f;
 		const float halfHeight	= colliderSize.y * 0.5f;
 
-		const glm::vec2& center = state.currentPosition + collider->offset;
+		const glm::vec2& center = state.currentPosition + collider.offset;
 
 		return {
 			.topLeft		= center + glm::vec2{ -halfWidth, halfHeight },
@@ -88,7 +88,7 @@ namespace
 		};
 	}
 
-	constexpr bool resolveCollisions(ZeroXGame::PhysicsState& lhsState, ZeroXGame::PhysicsState& rhsState, const ZeroXGame::Collider* lhs, const ZeroXGame::Collider* rhs)
+	constexpr bool resolveCollisions(ZeroXGame::PhysicsState& lhsState, ZeroXGame::PhysicsState& rhsState, const ZeroXGame::Collider2D& lhs, const ZeroXGame::Collider2D& rhs)
 	{
 		AABB lhsAABB = getAABB(lhsState, lhs);
 		AABB rhsAABB = getAABB(rhsState, rhs);
@@ -128,7 +128,7 @@ namespace
 		if (colliding)
 		{
 			lhsState.currentPosition +=
-				*std::min_element(std::begin(overlaps), std::end(overlaps)) * rhs->normal;
+				*std::min_element(std::begin(overlaps), std::end(overlaps)) * rhs.normal;
 		}
 
 		return colliding;
@@ -140,8 +140,8 @@ namespace ZeroXGame
 	void update(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
 	{
 		const auto& backgrounds = memory.backgrounds;
-		const auto& obstacles	= memory.obstacles;
-		const auto& enemies		= memory.enemies;
+		const auto& skulls		= memory.skulls;
+		const auto& mounsList	= memory.mounsSpan;
 		const auto& players		= memory.players;
 		
 		for (size_t i = 0; i < backgrounds.size(); ++i)
@@ -149,15 +149,7 @@ namespace ZeroXGame
 			updateBackground(backgrounds.data() + i, deltaTime);
 		}
 
-		for (size_t i = 0; i < obstacles.size(); ++i)
-		{
-			updateObstacle(obstacles.data() + i, deltaTime);
-		}
-
-		for (size_t i = 0; i < enemies.size(); ++i)
-		{
-			updateEnemy(enemies.data() + i, deltaTime);
-		}
+		// TODO(Karim): Update more stuff
 
 		for (size_t i = 0; i < players.size(); ++i)
 		{
@@ -167,27 +159,42 @@ namespace ZeroXGame
 
 	void fixedUpdate(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
 	{
-		const auto& obstacles	= memory.obstacles;
-		const auto& enemies		= memory.enemies;
-		const auto& players		= memory.players;
-		const auto& colliders	= memory.colliders;
+		const auto& obstacles		= memory.obstacles;
+		const auto& movingPlatforms = memory.movingPlatforms;
+		const auto& skulls			= memory.skulls;
+		const auto& mounsList		= memory.mounsSpan;
+		const auto& players			= memory.players;
 
 		for (size_t i = 0; i < obstacles.size(); ++i)
 		{
 			auto* obstacle = obstacles.data() + i;
 
 			::savePhysicsState(obstacle->gameEntity.physicsState);
-			fixedUpdateObstacle(obstacle, deltaTime);
+			/*fixedUpdateObstacle(obstacle, deltaTime);*/
 		}
 
-		for (size_t i = 0; i < enemies.size(); ++i)
+		for (size_t i = 0; i < movingPlatforms.size(); ++i)
 		{
-			auto* enemy = enemies.data() + i;
+			auto* movingPlatform = movingPlatforms.data() + i;
 
-			::savePhysicsState(enemy->gameEntity.physicsState);
-			fixedUpdateEnemy(enemy, deltaTime);
+			::savePhysicsState(movingPlatform->obstacle.gameEntity.physicsState);
+			/*fixedUpdateObstacle(obstacle, deltaTime);*/
+		}
 
-			// TODO(Karim): Resolve collisions against obstacles
+		for (size_t i = 0; i < skulls.size(); ++i)
+		{
+			auto* skull = skulls.data() + i;
+
+			::savePhysicsState(skull->gameEntity.physicsState);
+			/*fixedUpdateEnemy(enemy, deltaTime);*/
+		}
+
+		for (size_t i = 0; i < mounsList.size(); ++i)
+		{
+			auto* mouns = mounsList.data() + i;
+
+			::savePhysicsState(mouns->gameEntity.physicsState);
+			/*fixedUpdateEnemy(enemy, deltaTime);*/
 		}
 
 		for (size_t i = 0; i < players.size(); ++i)
@@ -197,20 +204,21 @@ namespace ZeroXGame
 			::savePhysicsState(player->gameEntity.physicsState);
 			fixedUpdatePlayer(player, deltaTime, input);
 
-			const Collider* playerCollider = colliders.data() + i;
+			const Collider2D& playerCollider = player->collider;
+
+			// TODO(Karim): Also moving platforms
 
 			for (size_t j = 0; j < obstacles.size(); ++j)
 			{
 				auto* obstacle = obstacles.data() + j;
 
-				const Collider* obstacleCollider =
-					colliders.data() + enemies.size() + players.size() + j;
+				const Collider2D& obstacleCollider = obstacle->collider;
 
 				if (::resolveCollisions(
 					player->gameEntity.physicsState,
 					obstacle->gameEntity.physicsState,
 					playerCollider,
-					obstacleCollider))
+					obstacle->collider))
 				{
 					onCollisionEnter(player, obstacleCollider);
 				}
@@ -224,9 +232,11 @@ namespace ZeroXGame
 
 	void lerpPhysics(const GameMemory& memory, float alpha)
 	{
-		const auto& obstacles	= memory.obstacles;
-		const auto& enemies		= memory.enemies;
-		const auto& players		= memory.players;
+		const auto& obstacles		= memory.obstacles;
+		const auto& movingPlatforms = memory.movingPlatforms;
+		const auto& skulls			= memory.skulls;
+		const auto& mounsList		= memory.mounsSpan;
+		const auto& players			= memory.players;
 
 		for (size_t i = 0; i < obstacles.size(); ++i)
 		{
@@ -238,13 +248,33 @@ namespace ZeroXGame
 				alpha);
 		}
 
-		for (size_t i = 0; i < enemies.size(); ++i)
+		for (size_t i = 0; i < movingPlatforms.size(); ++i)
 		{
-			auto* enemy = enemies.data() + i;
+			auto* movingPlatform = movingPlatforms.data() + i;
 
 			lerpPhysicsState(
-				enemy->gameEntity.physicsState,
-				enemy->gameEntity.renderEntity.transform,
+				movingPlatform->obstacle.gameEntity.physicsState,
+				movingPlatform->obstacle.gameEntity.renderEntity.transform,
+				alpha);
+		}
+
+		for (size_t i = 0; i < skulls.size(); ++i)
+		{
+			auto* skull = skulls.data() + i;
+
+			lerpPhysicsState(
+				skull->gameEntity.physicsState,
+				skull->gameEntity.renderEntity.transform,
+				alpha);
+		}
+
+		for (size_t i = 0; i < mounsList.size(); ++i)
+		{
+			auto* mouns = mounsList.data() + i;
+
+			lerpPhysicsState(
+				mouns->gameEntity.physicsState,
+				mouns->gameEntity.renderEntity.transform,
 				alpha);
 		}
 
@@ -277,10 +307,12 @@ namespace ZeroXGame
 
 		lerpPhysics(memory, static_cast<float>(accumulator / fixedDeltaTime));
 
-		const auto& colliders = memory.colliders;
-		for (size_t i = 0; i < colliders.size(); ++i)
+		const auto& colliderEntities = memory.collider2DEntities;
+		for (size_t i = 0; i < colliderEntities.size(); ++i)
 		{
-			updateCollider(colliders.data() + i);
+			Collider2DEntity* collider = colliderEntities.data() + i;
+
+			collider->gameEntity.renderEntity.transform = *collider->target;
 		}
 
 		update(memory, deltaTime, input);

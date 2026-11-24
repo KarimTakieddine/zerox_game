@@ -16,7 +16,6 @@ endif()
 Project(${PROJECT_NAME})
 
 list(APPEND SOURCES
-    ${SRC_DIR}/zerox_game_enemy.cpp
     ${SRC_DIR}/zerox_game_player.cpp
     ${SRC_DIR}/zerox_game_logic.cpp
     ${SRC_DIR}/zerox_game.cpp)
