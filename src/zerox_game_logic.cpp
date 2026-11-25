@@ -138,13 +138,13 @@ namespace
 
 namespace ZeroXGame
 {
-	void update(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
+	void update(const LevelView* level, double deltaTime, const ZeroXBridge::Input* input, const Animation* animations)
 	{
-		const auto& backgrounds		= memory.backgrounds;
-		const auto& movingPlatforms = memory.movingPlatforms;
-		const auto& skulls			= memory.skulls;
-		const auto& mounsList		= memory.mounsSpan;
-		const auto& players			= memory.players;
+		const auto& backgrounds		= level->backgrounds;
+		const auto& movingPlatforms = level->movingPlatforms;
+		const auto& skulls			= level->skulls;
+		const auto& mounsList		= level->mounsList;
+		const auto& players			= level->players;
 		
 		for (size_t i = 0; i < backgrounds.size(); ++i)
 		{
@@ -160,17 +160,17 @@ namespace ZeroXGame
 
 		for (size_t i = 0; i < players.size(); ++i)
 		{
-			updatePlayer(players.data() + i, deltaTime, input, memory.animations.data());
+			updatePlayer(players.data() + i, deltaTime, input, animations);
 		}
 	}
 
-	void fixedUpdate(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
+	void fixedUpdate(const LevelView* level, double deltaTime, const ZeroXBridge::Input* input)
 	{
-		const auto& obstacles		= memory.obstacles;
-		const auto& movingPlatforms = memory.movingPlatforms;
-		const auto& skulls			= memory.skulls;
-		const auto& mounsList		= memory.mounsSpan;
-		const auto& players			= memory.players;
+		const auto& obstacles		= level->obstacles;
+		const auto& movingPlatforms = level->movingPlatforms;
+		const auto& skulls			= level->skulls;
+		const auto& mounsList		= level->mounsList;
+		const auto& players			= level->players;
 
 		for (size_t i = 0; i < obstacles.size(); ++i)
 		{
@@ -237,13 +237,13 @@ namespace ZeroXGame
 		}
 	}
 
-	void lerpPhysics(const GameMemory& memory, float alpha)
+	void lerpPhysics(const LevelView* level, float alpha)
 	{
-		const auto& obstacles		= memory.obstacles;
-		const auto& movingPlatforms = memory.movingPlatforms;
-		const auto& skulls			= memory.skulls;
-		const auto& mounsList		= memory.mounsSpan;
-		const auto& players			= memory.players;
+		const auto& obstacles		= level->obstacles;
+		const auto& movingPlatforms = level->movingPlatforms;
+		const auto& skulls			= level->skulls;
+		const auto& mounsList		= level->mounsList;
+		const auto& players			= level->players;
 
 		for (size_t i = 0; i < obstacles.size(); ++i)
 		{
@@ -296,25 +296,25 @@ namespace ZeroXGame
 		}
 	}
 
-	void step(const GameMemory& memory, double deltaTime, double fixedDeltaTime, double* physicsAccumulator)
+	void step(const LiveMemoryView& memory, const ZeroXBridge::Input* input, const Animation* animations, double deltaTime, double fixedDeltaTime, double* physicsAccumulator)
 	{
 		assert(fixedDeltaTime != 0.0);
 
-		*physicsAccumulator += deltaTime;
+		const LevelView* liveLevel = memory.level.data();
 
-		const ZeroXBridge::Input* input = memory.input.data();
+		*physicsAccumulator += deltaTime;
 
 		auto& accumulator = *physicsAccumulator;
 		while (accumulator >= fixedDeltaTime)
 		{
-			fixedUpdate(memory, fixedDeltaTime, input);
+			fixedUpdate(liveLevel, fixedDeltaTime, input);
 
 			accumulator -= fixedDeltaTime;
 		}
 
-		lerpPhysics(memory, static_cast<float>(accumulator / fixedDeltaTime));
+		lerpPhysics(liveLevel, static_cast<float>(accumulator / fixedDeltaTime));
 
-		const auto& colliderEntities = memory.collider2DEntities;
+		const auto& colliderEntities = memory.colliderEntities;
 		for (size_t i = 0; i < colliderEntities.size(); ++i)
 		{
 			Collider2DEntity* collider = colliderEntities.data() + i;
@@ -322,6 +322,6 @@ namespace ZeroXGame
 			collider->gameEntity.renderEntity.transform = *collider->target;
 		}
 
-		update(memory, deltaTime, input);
+		update(liveLevel, deltaTime, input, animations);
 	}
 }

@@ -7,7 +7,7 @@
 
 namespace ZeroXGame
 {
-	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations)
+	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, const Animation* animations)
 	{
 		if ((player->currentMovementState & MovementState::JUMPING) == MovementState::JUMPING)
 		{

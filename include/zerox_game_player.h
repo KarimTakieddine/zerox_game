@@ -51,7 +51,7 @@ namespace ZeroXGame
 		float turnaroundAcceleration		{ 0.0f };
 	};
 
-	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, Animation* animations);
+	void updatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input, const Animation* animations);
 	void fixedUpdatePlayer(Player* player, double deltaTime, const ZeroXBridge::Input* input);
 	void onCollisionEnter(Player* player, const Collider2D& collider);
 	void onCollisionExit(Player* player, const Collider2D& collider);

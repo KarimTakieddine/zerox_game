@@ -1,6 +1,6 @@
 #include <zerox_input.h>
+#include <zerox_render_descriptor.h>
 
-#include "zerox_game_animation.h"
 #include "zerox_game_memory_header.h"
 #include "zerox_game_memory_reader.hpp"
 
@@ -16,15 +16,18 @@ namespace
 	template<typename T>
 	constexpr std::span<T> readMemoryBlock(unsigned char* start, uint64_t* offset)
 	{
-		const auto* memoryHeader = ::readMemoryHeader(start).data();
+		uint64_t nextOffset = *offset;
 
-		*offset += sizeof(GameMemoryHeader);
-		start	+= *offset;
+		const auto* memoryHeader = ::readMemoryHeader(start + nextOffset).data();
+
+		nextOffset += sizeof(GameMemoryHeader);
 
 		const uint64_t count = memoryHeader->count;
 
-		auto result = ZeroXGame::readContiguousArray<T>(start, count);
-		*offset		+= ( count * sizeof(T) );
+		auto result = ZeroXGame::readContiguousArray<T>(start + nextOffset, count);
+		nextOffset += ( count * sizeof(T) );
+
+		*offset = nextOffset;
 
 		return result;
 	}
@@ -32,17 +35,25 @@ namespace
 
 namespace ZeroXGame
 {
-	GameMemoryView readGameMemory(const GameAllocator* allocator)
+	GameMemoryView readGameMemory(unsigned char* data)
 	{
-		GameMemoryView gameMemoryView;
+		uint64_t offset{ 0 };
 
-		unsigned char* start = reinterpret_cast<unsigned char*>(allocator->peek());
+		return {
+			.input		= ::readMemoryBlock<ZeroXBridge::Input>(data, &offset),
+			.levels		= ::readMemoryBlock<LevelView>(data, &offset),
+			.animations	= ::readMemoryBlock<Animation>(data, &offset)
+		};
+	}
+
+	LiveMemoryView readLiveMemory(unsigned char* data)
+	{
 		size_t offset{ 0 };
 
-		gameMemoryView.input		= ::readMemoryBlock<ZeroXBridge::Input>(start, &offset);
-		gameMemoryView.levels		= ::readMemoryBlock<LevelView>(start, &offset);
-		gameMemoryView.animations	= ::readMemoryBlock<Animation>(start, &offset);
-
-		return gameMemoryView;
+		return {
+			.level				= ::readMemoryBlock<LevelView>(data, &offset),
+			.colliderEntities	= ::readMemoryBlock<Collider2DEntity>(data, &offset),
+			.renderDescriptors	= ::readMemoryBlock<ZeroXBridge::RenderDescriptor>(data, &offset)
+		};
 	}
 }

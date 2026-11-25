@@ -13,5 +13,6 @@ namespace ZeroXGame
 		return { reinterpret_cast<T*>(start), static_cast<size_t>(count) };
 	}
 
-	GameMemoryView readGameMemory(const GameAllocator* allocator);
+	GameMemoryView readGameMemory(unsigned char* data);
+	LiveMemoryView readLiveMemory(unsigned char* data);
 }
