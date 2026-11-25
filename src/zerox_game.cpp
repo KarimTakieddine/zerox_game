@@ -130,7 +130,7 @@ namespace ZeroXGame
             .type   = ZeroXBridge::SoundType::SOUND_EFFECT,
             .flags  = ZeroXBridge::SoundFlags::NONE
         };
-        engineFunctions->allocateAudio(engineFunctions->handle, "./audio/character_jump.mp3", &characterJumpSound);
+        engineFunctions->allocateAudio(engineFunctions->handle, "../../../audio/character_jump.mp3", &characterJumpSound);
 
         allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::INPUT, .count = 1 });
         auto* input = allocator->requestMemoryArray<ZeroXBridge::Input>(1);
