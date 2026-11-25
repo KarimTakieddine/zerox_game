@@ -1,5 +1,6 @@
 #include <zerox_input.h>
 
+#include "zerox_game_animation.h"
 #include "zerox_game_memory_header.h"
 #include "zerox_game_memory_reader.hpp"
 
@@ -38,8 +39,9 @@ namespace ZeroXGame
 		unsigned char* start = reinterpret_cast<unsigned char*>(allocator->peek());
 		size_t offset{ 0 };
 
-		gameMemoryView.input	= readMemoryBlock<ZeroXBridge::Input>(start, &offset);
-		gameMemoryView.levels	= readMemoryBlock<LevelView>(start, &offset);
+		gameMemoryView.input		= ::readMemoryBlock<ZeroXBridge::Input>(start, &offset);
+		gameMemoryView.levels		= ::readMemoryBlock<LevelView>(start, &offset);
+		gameMemoryView.animations	= ::readMemoryBlock<Animation>(start, &offset);
 
 		return gameMemoryView;
 	}
