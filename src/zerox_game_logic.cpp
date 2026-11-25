@@ -2,6 +2,7 @@
 
 #include "zerox_game_animation.h"
 #include "zerox_game_logic.h"
+#include "zerox_game_obstacle.h"
 #include "zerox_game_player.h"
 #include "zerox_game_transform.h"
 
@@ -139,14 +140,20 @@ namespace ZeroXGame
 {
 	void update(const GameMemory& memory, double deltaTime, const ZeroXBridge::Input* input)
 	{
-		const auto& backgrounds = memory.backgrounds;
-		const auto& skulls		= memory.skulls;
-		const auto& mounsList	= memory.mounsSpan;
-		const auto& players		= memory.players;
+		const auto& backgrounds		= memory.backgrounds;
+		const auto& movingPlatforms = memory.movingPlatforms;
+		const auto& skulls			= memory.skulls;
+		const auto& mounsList		= memory.mounsSpan;
+		const auto& players			= memory.players;
 		
 		for (size_t i = 0; i < backgrounds.size(); ++i)
 		{
 			updateBackground(backgrounds.data() + i, deltaTime);
+		}
+
+		for (size_t i = 0; i < movingPlatforms.size(); ++i)
+		{
+			updateMovingPlatform(movingPlatforms.data() + i, deltaTime);
 		}
 
 		// TODO(Karim): Update more stuff
@@ -178,7 +185,7 @@ namespace ZeroXGame
 			auto* movingPlatform = movingPlatforms.data() + i;
 
 			::savePhysicsState(movingPlatform->obstacle.gameEntity.physicsState);
-			/*fixedUpdateObstacle(obstacle, deltaTime);*/
+			fixedUpdateMovingPlatform(movingPlatform, deltaTime);
 		}
 
 		for (size_t i = 0; i < skulls.size(); ++i)

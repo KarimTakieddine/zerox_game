@@ -226,13 +226,15 @@ namespace ZeroXGame
         const auto movingPlatformCount  = *allocator->requestMemory<uint64_t>(1);
         auto* movingPlatforms           = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
 
-        setPosition(movingPlatforms[0].obstacle.gameEntity.renderEntity.transform, { 6.0f, 4.0f });
+        setPosition(movingPlatforms[0].obstacle.gameEntity.renderEntity.transform, { -6.0f, 2.0f });
         setLocalScale(movingPlatforms[0].obstacle.gameEntity.renderEntity.transform, { 4.0f, 1.0f });
         movingPlatforms[0].obstacle.collider.size   = { 4.0f, 1.0f };
         movingPlatforms[0].obstacle.collider.normal = { 0.0f, 1.0f };
         movingPlatforms[0].obstacle.gameEntity.renderEntity.material.uvScale    = { 0.0625f, 0.0625f };
         movingPlatforms[0].obstacle.gameEntity.renderEntity.material.uvOffset   = { 0.0f, 0.9375f };
-        movingPlatforms[0].obstacle.gameEntity.renderEntity.material.tileSizeX  = 1;
+        movingPlatforms[0].obstacle.gameEntity.renderEntity.material.tileSizeX  = 2;
+        movingPlatforms[0].switchTime                                           = 8.0f;
+        movingPlatforms[0].velocity                                             = { -0.0f, -1.5f };
 
         levels->movingPlatforms     = movingPlatforms;
         levels->movingPlatformCount = movingPlatformCount;
@@ -362,6 +364,8 @@ namespace ZeroXGame
             movingPlatform->obstacle.collider                                   = config->obstacle.collider;
             movingPlatform->obstacle.gameEntity.physicsState.currentPosition    = getPosition(movingPlatform->obstacle.gameEntity.renderEntity.transform);
             movingPlatform->obstacle.gameEntity.physicsState.lastPosition       = movingPlatform->obstacle.gameEntity.physicsState.currentPosition;
+            movingPlatform->switchTime                                          = config->switchTime;
+            movingPlatform->velocity                                            = config->velocity;
         }
 
         const auto colliderCount    = *allocator->requestMemory<uint64_t>(playerCount + skullCount + mounsCount + obstacleCount + movingPlatformCount);
