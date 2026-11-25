@@ -37,8 +37,9 @@ namespace
         const unsigned int columnCount  { animationRegion.width / frameWidth };
         const unsigned int rowCount     { animationRegion.height / frameHeight };
 
-        animation->frameCount   = *allocator->requestMemory<uint64_t>(static_cast<uint64_t>(rowCount * columnCount));
-        animation->frames       = allocator->requestMemoryArray<AnimationFrame>(animation->frameCount);
+        const size_t frameCount = static_cast<size_t>(rowCount) * columnCount;
+
+        auto* frames = allocator->requestMemoryArray<AnimationFrame>(frameCount);
 
         const glm::vec2 uvScale = {
             static_cast<float>(frameWidth) / sampleRegion.width,
@@ -56,12 +57,15 @@ namespace
             {
                 const size_t flattenedIndex = static_cast<size_t>(row * columnCount) + column;
 
-                *(animation->frames + flattenedIndex) = {
+                *(frames + flattenedIndex) = {
                     .uvScale    = uvScale,
                     .uvOffset   = uvOffset + glm::vec2{ column * uvScale.x, row * uvScale.y }
                 };
             }
         }
+
+        animation->frames       = frames;
+        animation->frameCount   = frameCount;
     }
 }
 
@@ -142,37 +146,31 @@ namespace ZeroXGame
             // -> Configure background(s):
 
         constexpr size_t backgroundCount{ 2 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::BACKGROUND, .count = static_cast<uint64_t>(backgroundCount) });
         auto* backgrounds = allocator->requestMemoryArray<Background>(backgroundCount);
 
             // -> Configure obstacle(s):
 
         constexpr size_t obstacleCount{ 4 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::OBSTACLE, .count = static_cast<uint64_t>(obstacleCount) });
         auto* obstacles = allocator->requestMemoryArray<Obstacle>(obstacleCount);
 
             // -> Configure moving platforms(s):
 
         constexpr size_t movingPlatformCount{ 1 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::MOVING_PLATFORM, .count = static_cast<uint64_t>(movingPlatformCount) });
         auto* movingPlatforms = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
 
             // -> Configure skull(s):
         
         constexpr size_t skullCount{ 4 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::SKULL, .count = static_cast<uint64_t>(skullCount) });
         auto* skulls = allocator->requestMemoryArray<Skull>(skullCount);
 
             // -> Configure Mouns(s):
 
         constexpr size_t mounsCount{ 1 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::MOUNS, .count = static_cast<size_t>(mounsCount) });
         auto* mounsList = allocator->requestMemoryArray<Mouns>(mounsCount);
 
             // -> Configure Player(s):
 
         constexpr size_t playerCount{ 1 };
-        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::PLAYER, .count = static_cast<size_t>(playerCount) });
         auto* players = allocator->requestMemoryArray<Player>(playerCount);
 
         levels->backgrounds     = std::span<Background>(backgrounds, backgroundCount);
@@ -181,6 +179,16 @@ namespace ZeroXGame
         levels->skulls          = std::span<Skull>(skulls, skullCount);
         levels->mounsList       = std::span<Mouns>(mounsList, mounsCount);
         levels->players         = std::span<Player>(players, playerCount);
+
+        const size_t animationCount{ 3 };
+        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::ANIMATION, .count = static_cast<uint64_t>(animationCount) });
+        auto* animations = allocator->requestMemoryArray<Animation>(animationCount);
+
+            // -> Configure Animations(s):
+
+        ::allocateFrames(allocator, animations, { .x = 0, .y = 0, .width = 1024, .height = 1024 }, { .x = 0, .y = 64, .width = 512, .height = 64 }, 64, 64);
+        ::allocateFrames(allocator, animations + 1, { .x = 0, .y = 0, .width = 1024, .height = 1024 }, { .x = 832, .y = 0, .width = 192, .height = 64 }, 64, 64);
+        ::allocateFrames(allocator, animations + 2, { .x = 0, .y = 0, .width = 1024, .height = 1024 }, { .x = 320, .y = 0, .width = 320, .height = 64 }, 64, 64);
 
         auto gameMemory = readGameMemory(allocator);
 

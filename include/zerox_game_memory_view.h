@@ -12,7 +12,6 @@ namespace ZeroXBridge
 namespace ZeroXGame
 {
 	struct Animation;
-	struct AnimationFrame;
 	struct Background;
 	struct Collider2DEntity;
 	struct Level;
@@ -21,12 +20,6 @@ namespace ZeroXGame
 	struct Obstacle;
 	struct Player;
 	struct Skull;
-
-	struct alignas(16) AnimationView
-	{
-		std::span<Animation> animation;
-		std::span<AnimationFrame> frames;
-	};
 
 	struct alignas(16) LevelView
 	{
@@ -42,7 +35,7 @@ namespace ZeroXGame
 	{
 		std::span<ZeroXBridge::Input> input;
 		std::span<LevelView> levels;
-		std::span<AnimationView> animations;
+		std::span<Animation> animations;
 		std::span<LevelView> currentLevelView;
 		std::span<Collider2DEntity> colliderEntities;
 		std::span<ZeroXBridge::RenderDescriptor> renderDescriptors;
