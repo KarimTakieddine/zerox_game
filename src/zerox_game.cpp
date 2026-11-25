@@ -94,7 +94,7 @@ namespace ZeroXGame
         }
 
         constexpr const char* textureFiles[1] = {
-            "../../textures/the_mega_texture.png"
+            "../../../textures/the_mega_texture.png"
         };
 
         ZeroXBridge::Texture theMegaTexture = {
@@ -110,8 +110,8 @@ namespace ZeroXGame
         engineFunctions->uploadTextures(engineFunctions->handle, textureFiles, &theMegaTexture, 1);
 
         constexpr const char* textureArrayFiles[2] = {
-            "../../textures/test_background_0.png",
-            "../../textures/test_background_1.png"
+            "../../../textures/test_background_0.png",
+            "../../../textures/test_background_1.png"
         };
 
         ZeroXBridge::Texture backgroundTexture = {
@@ -244,145 +244,6 @@ namespace ZeroXGame
         ::allocateFrames(allocator, animations + 1, { .x = 0, .y = 0, .width = 1024, .height = 1024 }, { .x = 832, .y = 0, .width = 192, .height = 64 }, 64, 64);
         ::allocateFrames(allocator, animations + 2, { .x = 0, .y = 0, .width = 1024, .height = 1024 }, { .x = 320, .y = 0, .width = 320, .height = 64 }, 64, 64);
 
-        /*const auto levelCount   = *allocator->requestMemory<uint64_t>(1);
-        auto* levels            = allocator->requestMemoryArray<Level>(1);
-
-        const auto backgroundCount  = *allocator->requestMemory<uint64_t>(2);
-        auto* backgrounds           = allocator->requestMemoryArray<Background>(backgroundCount);
-
-        setPosition(backgrounds[0].entity.renderEntity.transform, { 0.0f, 0.0f });
-        setLocalScale(backgrounds[0].entity.renderEntity.transform, { 33.0f, 16.875f });
-
-        setPosition(backgrounds[1].entity.renderEntity.transform, { 0.0f, 0.0f });
-        setLocalScale(backgrounds[1].entity.renderEntity.transform, { 33.0f, 16.875f });
-
-        levels->backgrounds     = backgrounds;
-        levels->backgroundCount = backgroundCount;
-
-        const auto playerCount  = *allocator->requestMemory<uint64_t>(1);
-        auto* players           = allocator->requestMemoryArray<Player>(playerCount);
-
-        setPosition(players[0].gameEntity.renderEntity.transform, { 0.0f, 0.0f });
-        players[0].gameEntity.renderEntity.material.uvScale = { 0.0625f, 0.0625f };
-
-        levels->players     = players;
-        levels->playerCount = playerCount;
-
-        const auto skullCount   = *allocator->requestMemory<uint64_t>(4);
-        auto* skulls            = allocator->requestMemoryArray<Skull>(skullCount);
-
-        setPosition(skulls[0].gameEntity.renderEntity.transform, { 3.0f, 0.0f });
-        skulls[0].gameEntity.renderEntity.material.uvScale     = { 0.0625f, 0.0625f };
-        skulls[0].gameEntity.renderEntity.material.uvOffset    = { 0.0f, 0.1875f };
-
-        setPosition(skulls[1].gameEntity.renderEntity.transform, { 6.0f, 0.0f });
-        skulls[1].gameEntity.renderEntity.material.uvScale     = { 0.0625f, 0.0625f };
-        skulls[1].gameEntity.renderEntity.material.uvOffset    = { 0.0f, 0.1875f };
-
-        setPosition(skulls[2].gameEntity.renderEntity.transform, { 9.0f, 0.0f });
-        skulls[2].gameEntity.renderEntity.material.uvScale     = { 0.0625f, 0.0625f };
-        skulls[2].gameEntity.renderEntity.material.uvOffset    = { 0.0f, 0.1875f };
-
-        setPosition(skulls[3].gameEntity.renderEntity.transform, { 12.0f, 0.0f });
-        skulls[3].gameEntity.renderEntity.material.uvScale     = { 0.0625f, 0.0625f };
-        skulls[3].gameEntity.renderEntity.material.uvOffset    = { 0.0f, 0.1875f };
-
-        levels->skulls      = skulls;
-        levels->skullCount  = skullCount;
-
-        const auto mounsCount   = *allocator->requestMemory<uint64_t>(1);
-        auto* mounsList         = allocator->requestMemoryArray<Mouns>(mounsCount);
-
-        setPosition(mounsList[0].gameEntity.renderEntity.transform, { 7.0f, -4.0f });
-        mounsList[0].gameEntity.renderEntity.material.uvScale = { 0.0625f, 0.0625f };
-        mounsList[0].gameEntity.renderEntity.material.uvOffset = { 0.0f, 0.125f };
-
-        levels->mounsList   = mounsList;
-        levels->mounsCount  = mounsCount;
-
-        const auto obstacleCount    = *allocator->requestMemory<uint64_t>(4);
-        auto* obstacles             = allocator->requestMemoryArray<Obstacle>(obstacleCount);
-
-        setPosition(obstacles[0].gameEntity.renderEntity.transform, { -15.25f, 0.0f });
-        setLocalScale(obstacles[0].gameEntity.renderEntity.transform, { 1.0f, 18.0f });
-        obstacles[0].collider = { .size = { 1.0f, 18.0f }, .normal = { 1.0f, 0.0f } };
-
-        setPosition(obstacles[1].gameEntity.renderEntity.transform, { 15.25f, 0.0f });
-        setLocalScale(obstacles[1].gameEntity.renderEntity.transform, { 1.0f, 18.0f });
-        obstacles[1].collider = { .size = { 1.0f, 18.0f }, .normal = { -1.0f, 0.0f } };
-
-        setPosition(obstacles[2].gameEntity.renderEntity.transform, { 0.0f, -8.0f });
-        setLocalScale(obstacles[2].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
-        obstacles[2].collider = { .size = { 32.0f, 1.0f }, .normal = { 0.0f, 1.0f } };
-
-        setPosition(obstacles[3].gameEntity.renderEntity.transform, { 0.0f, 8.0f });
-        setLocalScale(obstacles[3].gameEntity.renderEntity.transform, { 32.0f, 1.0f });
-        obstacles[3].collider = { .size = { 32.0f, 1.0f }, .normal = { 0.0f, -1.0f } };
-
-        obstacles[0].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[0].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.9375f };
-        obstacles[0].gameEntity.renderEntity.material.tileSizeY = 16;
-
-        obstacles[1].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[1].gameEntity.renderEntity.material.uvOffset  = { 0.125f, 0.9375f };
-        obstacles[1].gameEntity.renderEntity.material.tileSizeY = 16;
-
-        obstacles[2].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[2].gameEntity.renderEntity.material.uvOffset  = { 0.0f, 0.9375f };
-        obstacles[2].gameEntity.renderEntity.material.tileSizeX = 16;
-
-        obstacles[3].gameEntity.renderEntity.material.uvScale   = { 0.0625f, 0.0625f };
-        obstacles[3].gameEntity.renderEntity.material.uvOffset  = { 0.0f, 0.9375f };
-        obstacles[3].gameEntity.renderEntity.material.tileSizeX = 16;
-
-        levels->obstacles       = obstacles;
-        levels->obstacleCount   = obstacleCount;
-
-        const auto movingPlatformCount  = *allocator->requestMemory<uint64_t>(1);
-        auto* movingPlatforms           = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
-
-        setPosition(movingPlatforms[0].obstacle.gameEntity.renderEntity.transform, { -6.0f, 2.0f });
-        setLocalScale(movingPlatforms[0].obstacle.gameEntity.renderEntity.transform, { 4.0f, 1.0f });
-        movingPlatforms[0].obstacle.collider.size   = { 4.0f, 1.0f };
-        movingPlatforms[0].obstacle.collider.normal = { 0.0f, 1.0f };
-        movingPlatforms[0].obstacle.gameEntity.renderEntity.material.uvScale    = { 0.0625f, 0.0625f };
-        movingPlatforms[0].obstacle.gameEntity.renderEntity.material.uvOffset   = { 0.0f, 0.9375f };
-        movingPlatforms[0].obstacle.gameEntity.renderEntity.material.tileSizeX  = 2;
-        movingPlatforms[0].switchTime                                           = 8.0f;
-        movingPlatforms[0].velocity                                             = { -0.0f, -1.5f };
-
-        levels->movingPlatforms     = movingPlatforms;
-        levels->movingPlatformCount = movingPlatformCount;
-
-        auto* animations = ::allocateAnimations(allocator, 3);
-
-        auto* jumpAnimation = animations;
-        ::allocateFrames(
-            allocator,
-            jumpAnimation,
-            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 0, .y = 64, .width = 512, .height = 64 },
-            64,
-            64);
-
-        auto* fallAnimation = animations + 1;
-        ::allocateFrames(
-            allocator,
-            fallAnimation,
-            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 832, .y = 0, .width = 192, .height = 64 },
-            64,
-            64);
-
-        auto* walkAnimation = animations + 2;
-        ::allocateFrames(
-            allocator,
-            walkAnimation,
-            { .x = 0, .y = 0, .width = 1024, .height = 1024 },
-            { .x = 320, .y = 0, .width = 320, .height = 64 },
-            64,
-            64);*/
-
         return { .input = input };
     }
 
@@ -478,101 +339,6 @@ namespace ZeroXGame
         liveLevel->skulls           = { liveSkulls, skullCount };
         liveLevel->mounsList        = { liveMouns, mounsCount };
         liveLevel->players          = { livePlayers, playerCount };
-
-        //if (!context)
-        //{
-        //    return false;
-        //}
-
-        //const GameMemory gameMemory = readGameMemory(allocator);
-
-        //allocator->free(allocator->getLiveSizeInBytes() - getReservedSize(gameMemory));
-        //const size_t baseLevelOffset = allocator->getLiveSizeInBytes();
-
-        //const Level* level = gameMemory.levels.data() + index;
-
-        //const auto backgroundCount  = *allocator->requestMemory<uint64_t>(level->backgroundCount);
-        //auto* backgrounds           = allocator->requestMemoryArray<Background>(backgroundCount);
-        //for (size_t i = 0; i < backgroundCount; ++i)
-        //{
-        //    Background* background      = backgrounds + i;
-        //    const Background* config    = level->backgrounds + i;
-
-        //    background->entity                              = config->entity;
-        //    background->entity.physicsState.currentPosition = getPosition(background->entity.renderEntity.transform);
-        //    background->entity.physicsState.lastPosition    = background->entity.physicsState.currentPosition;
-
-        //    background->entity.renderEntity.layer   = static_cast<uint64_t>(i);
-        //    const float multiplier                  = (i % 2) == 0 ? -1.0f : 1.0f;
-        //    background->scrollSpeed                 = { ( 1.0f / static_cast<float>(i + 1) ) * 0.0625f * multiplier, 0.0f};
-        //}
-
-        //const auto playerCount  = *allocator->requestMemory<uint64_t>(level->playerCount);
-        //auto* players           = allocator->requestMemoryArray<Player>(playerCount);
-        //for (size_t i = 0; i < playerCount; ++i)
-        //{
-        //    Player* player          = players + i;
-        //    const Player* config    = level->players + i;
-
-        //    player->gameEntity                              = config->gameEntity;
-        //    player->collider                                = config->collider;
-        //    player->gameEntity.physicsState.currentPosition = getPosition(player->gameEntity.renderEntity.transform);
-        //    player->gameEntity.physicsState.lastPosition    = player->gameEntity.physicsState.currentPosition;
-        //}
-
-        //const auto skullCount   = *allocator->requestMemory<uint64_t>(level->skullCount);
-        //auto* skulls            = allocator->requestMemoryArray<Skull>(skullCount);
-        //for (size_t i = 0; i < skullCount; ++i)
-        //{
-        //    Skull* skull        = skulls + i;
-        //    const Skull* config = level->skulls + i;
-
-        //    skull->gameEntity                               = config->gameEntity;
-        //    skull->collider                                 = config->collider;
-        //    skull->gameEntity.physicsState.currentPosition  = getPosition(skull->gameEntity.renderEntity.transform);
-        //    skull->gameEntity.physicsState.lastPosition     = skull->gameEntity.physicsState.currentPosition;
-        //}
-
-        //const auto mounsCount   = *allocator->requestMemory<uint64_t>(level->mounsCount);
-        //auto* mounsList         = allocator->requestMemoryArray<Mouns>(mounsCount);
-        //for (size_t i = 0; i < mounsCount; ++i)
-        //{
-        //    Mouns* mouns        = mounsList + i;
-        //    const Mouns* config = level->mounsList + i;
-
-        //    mouns->gameEntity                               = config->gameEntity;
-        //    mouns->collider                                 = config->collider;
-        //    mouns->gameEntity.physicsState.currentPosition  = getPosition(mouns->gameEntity.renderEntity.transform);
-        //    mouns->gameEntity.physicsState.lastPosition     = mouns->gameEntity.physicsState.currentPosition;
-        //}
-
-        //const auto obstacleCount    = *allocator->requestMemory<uint64_t>(level->obstacleCount);
-        //auto* obstacles             = allocator->requestMemoryArray<Obstacle>(obstacleCount);
-        //for (size_t i = 0; i < obstacleCount; ++i)
-        //{
-        //    Obstacle* obstacle      = obstacles + i;
-        //    const Obstacle* config  = level->obstacles + i;
-
-        //    obstacle->gameEntity                                = config->gameEntity;
-        //    obstacle->collider                                  = config->collider;
-        //    obstacle->gameEntity.physicsState.currentPosition   = getPosition(obstacle->gameEntity.renderEntity.transform);
-        //    obstacle->gameEntity.physicsState.lastPosition      = obstacle->gameEntity.physicsState.currentPosition;
-        //}
-
-        //const auto movingPlatformCount  = *allocator->requestMemory<uint64_t>(1);
-        //auto* movingPlatforms           = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
-        //for (size_t i = 0; i < movingPlatformCount; ++i)
-        //{
-        //    MovingPlatform* movingPlatform  = movingPlatforms + i;
-        //    const MovingPlatform* config    = level->movingPlatforms + i;
-
-        //    movingPlatform->obstacle.gameEntity                                 = config->obstacle.gameEntity;
-        //    movingPlatform->obstacle.collider                                   = config->obstacle.collider;
-        //    movingPlatform->obstacle.gameEntity.physicsState.currentPosition    = getPosition(movingPlatform->obstacle.gameEntity.renderEntity.transform);
-        //    movingPlatform->obstacle.gameEntity.physicsState.lastPosition       = movingPlatform->obstacle.gameEntity.physicsState.currentPosition;
-        //    movingPlatform->switchTime                                          = config->switchTime;
-        //    movingPlatform->velocity                                            = config->velocity;
-        //}
 
         //const auto colliderCount    = *allocator->requestMemory<uint64_t>(playerCount + skullCount + mounsCount + obstacleCount + movingPlatformCount);
         //auto* colliders             = allocator->requestMemoryArray<Collider2DEntity>(colliderCount);
