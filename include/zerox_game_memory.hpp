@@ -63,7 +63,7 @@ namespace ZeroXGame
         return cursor.getOffset();
     }
 
-    inline GameMemory readGameMemory(const GameAllocator* allocator)
+    /*inline GameMemory readGameMemory(const GameAllocator* allocator)
     {
         GameMemory result;
 
@@ -132,5 +132,5 @@ namespace ZeroXGame
             allocator->getLiveSizeInBytes() - gameMemoryCursor.getOffset());
         
         return result;
-    }
+    }*/
 }

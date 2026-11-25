@@ -16,6 +16,7 @@ endif()
 Project(${PROJECT_NAME})
 
 list(APPEND SOURCES
+    ${SRC_DIR}/zerox_game_memory_reader.cpp
     ${SRC_DIR}/zerox_game_obstacle.cpp
     ${SRC_DIR}/zerox_game_player.cpp
     ${SRC_DIR}/zerox_game_logic.cpp
@@ -51,12 +52,3 @@ add_custom_command(TARGET ${PROJECT_NAME}
     COMMENT "Removing existing library copies..."
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
-
-add_custom_target(Assets ALL)
-
-add_custom_command(TARGET Assets POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${AUDIO_DIR}" $<TARGET_FILE_DIR:${PROJECT_NAME}>/${AUDIO_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/${TEXTURES_DIR}" $<TARGET_FILE_DIR:${PROJECT_NAME}>/${TEXTURES_DIR}
-    VERBATIM)
-
-add_dependencies(${PROJECT_NAME} Assets)
