@@ -50,8 +50,11 @@ namespace ZeroXGame
 	{
 		size_t offset{ 0 };
 
+		auto level	= ::readMemoryBlock<LevelView>(data, &offset);
+		offset		+= getByteSize(level.data());
+
 		return {
-			.level				= ::readMemoryBlock<LevelView>(data, &offset),
+			.level				= level,
 			.colliderEntities	= ::readMemoryBlock<Collider2DEntity>(data, &offset),
 			.entitySections		= ::readMemoryBlock<ZeroXBridge::EntitySection>(data, &offset)
 		};

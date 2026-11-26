@@ -72,15 +72,15 @@ namespace ZeroXGame
 
 		result += memoryHeaderSize + ( levelCount * sizeof(LevelView) );
 
-		const auto animations		= view.animations;
-		const size_t animationCount = animations.size();
-
-		result += memoryHeaderSize + ( animationCount * sizeof(Animation) );
-
 		for (size_t i = 0; i < levelCount; ++i)
 		{
 			result += getByteSize(levels.data() + i);
 		}
+
+		const auto animations		= view.animations;
+		const size_t animationCount = animations.size();
+
+		result += memoryHeaderSize + ( animationCount * sizeof(Animation) );
 
 		for (size_t i = 0; i < animationCount; ++i)
 		{
