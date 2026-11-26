@@ -167,7 +167,12 @@ namespace ZeroXGame
         auto* backgrounds = allocator->requestMemoryArray<Background>(backgroundCount);
 
         configureTransform(backgrounds[0].entity.renderEntity.transform, { 0.0f, 0.0f }, { 33.0f, 16.875f });
+        backgrounds[0].entity.renderEntity.layer    = 1;
+        backgrounds[0].scrollSpeed                  = { -0.0375f, 0.0f };
+
         configureTransform(backgrounds[1].entity.renderEntity.transform, { 0.0f, 0.0f }, { 33.0f, 16.875f });
+        backgrounds[1].entity.renderEntity.layer    = 0;
+        backgrounds[1].scrollSpeed                  = { 0.0625f, 0.0f };
 
             // -> Configure obstacle(s):
 
@@ -176,15 +181,19 @@ namespace ZeroXGame
 
         configureTransform(obstacles[0].gameEntity.renderEntity.transform, { -15.25f, 0.0f }, { 1.0f, 18.0f });
         configureCollider(obstacles[0].collider, { 1.0f, 18.0f }, { 1.0f, 0.0f });
+        configureMaterial(obstacles[0].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.125f, 0.9375f }, 1, 18);
 
         configureTransform(obstacles[1].gameEntity.renderEntity.transform, { 15.25f, 0.0f }, { 1.0f, 18.0f });
         configureCollider(obstacles[1].collider, { 1.0f, 18.0f }, { -1.0f, 0.0f });
+        configureMaterial(obstacles[1].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.125f, 0.9375f }, 1, 18);
 
         configureTransform(obstacles[2].gameEntity.renderEntity.transform, { 0.0f, -8.0f }, { 32.0f, 1.0f });
         configureCollider(obstacles[2].collider, { 32.0f, 1.0f }, { 0.0f, 1.0f });
+        configureMaterial(obstacles[2].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.0f, 0.9375f }, 16);
 
         configureTransform(obstacles[3].gameEntity.renderEntity.transform, { 0.0f, 8.0f }, { 32.0f, 1.0f });
         configureCollider(obstacles[3].collider, { 32.0f, 1.0f }, { 0.0f, -1.0f });
+        configureMaterial(obstacles[3].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.0625f, 0.9375f }, 16);
 
             // -> Configure moving platforms(s):
 
@@ -213,7 +222,7 @@ namespace ZeroXGame
         configureMaterial(skulls[2].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.0f, 0.1875f });
 
         setPosition(skulls[3].gameEntity.renderEntity.transform, { 12.0f, 0.0f });
-        configureMaterial(skulls[1].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.0f, 0.1875f });
+        configureMaterial(skulls[3].gameEntity.renderEntity.material, { 0.0625f, 0.0625f }, { 0.0f, 0.1875f });
 
             // -> Configure Mouns(s):
 
@@ -250,8 +259,9 @@ namespace ZeroXGame
     bool loadLevel(const ZeroXBridge::GameContext* context, GameAllocator* allocator, size_t index)
     {
         const GameMemoryView gameMemoryView = readGameMemory(reinterpret_cast<unsigned char*>(allocator->peek()));
+        const size_t reservedByteSize       = getReservedByteSize(gameMemoryView);
 
-        allocator->free(allocator->getLiveSizeInBytes() - getReservedByteSize(gameMemoryView));
+        allocator->free(allocator->getLiveSizeInBytes() - reservedByteSize);
 
         const auto levels = gameMemoryView.levels;
         if (index >= levels.size())
@@ -261,18 +271,43 @@ namespace ZeroXGame
 
         const auto* level = gameMemoryView.levels.data() + index;
 
+        // Load live level:
+
         allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::LEVEL, .count = 1 });
         auto* liveLevel = allocator->requestMemoryArray<LevelView>(1);
+
+        const auto levelBackgrounds     = level->backgrounds;
+        const size_t backgroundCount    = levelBackgrounds.size();
+
+        const auto levelObstacles   = level->obstacles;
+        const size_t obstacleCount  = levelObstacles.size();
+
+        const auto levelMovingPlatforms     = level->movingPlatforms;
+        const size_t movingPlatformCount    = levelMovingPlatforms.size();
+
+        const auto levelSkulls  = level->skulls;
+        const size_t skullCount = levelSkulls.size();
+
+        const auto levelMouns   = level->mounsList;
+        const size_t mounsCount = levelMouns.size();
+
+        const auto levelPlayers     = level->players;
+        const size_t playerCount    = levelPlayers.size();
+
+        const size_t colliderCount = obstacleCount + movingPlatformCount + skullCount + mounsCount + playerCount;
+        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::COLLIDER_ENTITY, .count = static_cast<uint64_t>(colliderCount) });
+        auto* colliderEntities = allocator->requestMemoryArray<Collider2DEntity>(colliderCount);
+
+        const size_t entitySectionCount{ 4 };
+        allocator->requestMemory<GameMemoryHeader>(GameMemoryHeader{ .type = MemoryType::ENTITY_SECTION, .count = static_cast<uint64_t>(entitySectionCount) });
+        auto* entitySections = allocator->requestMemoryArray<ZeroXBridge::EntitySection>(entitySectionCount);
 
         auto resetPhysics = [](const ZeroXBridge::Transform& transform, PhysicsState& state) -> void {
             state.currentPosition = getPosition(transform);
             state.lastPosition    = state.currentPosition;
         };
 
-        const auto levelBackgrounds     = level->backgrounds;
-        const size_t backgroundCount    = levelBackgrounds.size();
-        auto* liveBackgrounds           = allocator->requestMemoryArray<Background>(backgroundCount);
-
+        auto* liveBackgrounds  = allocator->requestMemoryArray<Background>(backgroundCount);
         for (size_t i = 0; i < backgroundCount; ++i)
         {
             Background* liveBackground  = liveBackgrounds + i;
@@ -281,10 +316,7 @@ namespace ZeroXGame
             resetPhysics(liveBackground->entity.renderEntity.transform, liveBackground->entity.physicsState);
         }
 
-        const auto levelObstacles   = level->obstacles;
-        const size_t obstacleCount  = levelObstacles.size();
-        auto* liveObstacles         = allocator->requestMemoryArray<Obstacle>(obstacleCount);
-
+        auto* liveObstacles = allocator->requestMemoryArray<Obstacle>(obstacleCount);
         for (size_t i = 0; i < obstacleCount; ++i)
         {
             Obstacle* liveObstacle  = liveObstacles + i;
@@ -293,10 +325,7 @@ namespace ZeroXGame
             resetPhysics(liveObstacle->gameEntity.renderEntity.transform, liveObstacle->gameEntity.physicsState);
         }
 
-        const auto levelMovingPlatforms     = level->movingPlatforms;
-        const size_t movingPlatformCount    = levelMovingPlatforms.size();
-        auto* liveMovingPlatforms           = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
-
+        auto* liveMovingPlatforms = allocator->requestMemoryArray<MovingPlatform>(movingPlatformCount);
         for (size_t i = 0; i < movingPlatformCount; ++i)
         {
             MovingPlatform* liveMovingPlatform  = liveMovingPlatforms + i;
@@ -305,10 +334,7 @@ namespace ZeroXGame
             resetPhysics(liveMovingPlatform->obstacle.gameEntity.renderEntity.transform, liveMovingPlatform->obstacle.gameEntity.physicsState);
         }
 
-        const auto levelSkulls  = level->skulls;
-        const size_t skullCount = levelSkulls.size();
-        auto* liveSkulls        = allocator->requestMemoryArray<Skull>(skullCount);
-
+        auto* liveSkulls = allocator->requestMemoryArray<Skull>(skullCount);
         for (size_t i = 0; i < skullCount; ++i)
         {
             Skull* liveSkull    = liveSkulls + i;
@@ -317,10 +343,7 @@ namespace ZeroXGame
             resetPhysics(liveSkull->gameEntity.renderEntity.transform, liveSkull->gameEntity.physicsState);
         }
 
-        const auto levelMouns   = level->mounsList;
-        const size_t mounsCount = levelMouns.size();
-        auto* liveMouns         = allocator->requestMemoryArray<Mouns>(mounsCount);
-
+        auto* liveMouns = allocator->requestMemoryArray<Mouns>(mounsCount);
         for (size_t i = 0; i < mounsCount; ++i)
         {
             Mouns* mouns    = liveMouns + i;
@@ -329,9 +352,7 @@ namespace ZeroXGame
             resetPhysics(mouns->gameEntity.renderEntity.transform, mouns->gameEntity.physicsState);
         }
 
-        const auto levelPlayers     = level->players;
-        const size_t playerCount    = levelPlayers.size();
-        auto* livePlayers           = allocator->requestMemoryArray<Player>(playerCount);
+        auto* livePlayers = allocator->requestMemoryArray<Player>(playerCount);
 
         liveLevel->backgrounds      = { liveBackgrounds, backgroundCount };
         liveLevel->obstacles        = { liveObstacles, obstacleCount };
@@ -340,176 +361,156 @@ namespace ZeroXGame
         liveLevel->mounsList        = { liveMouns, mounsCount };
         liveLevel->players          = { livePlayers, playerCount };
 
-        //const auto colliderCount    = *allocator->requestMemory<uint64_t>(playerCount + skullCount + mounsCount + obstacleCount + movingPlatformCount);
-        //auto* colliders             = allocator->requestMemoryArray<Collider2DEntity>(colliderCount);
+        // Load collider entities:
 
-        //for (size_t i = 0; i < playerCount; ++i)
-        //{
-        //    colliders->collider2D   = &(players + i)->collider;
-        //    colliders->target       = &(players + i)->gameEntity.renderEntity.transform;
+        for (size_t i = 0; i < obstacleCount; ++i)
+        {
+            Obstacle* obstacle = liveObstacles + i;
 
-        //    setLocalScale(colliders->gameEntity.renderEntity.transform, (players + i)->collider.size);
-        //    colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+            colliderEntities->collider2D                                = &obstacle->collider;
+            colliderEntities->target                                    = &obstacle->gameEntity.renderEntity.transform;
+            colliderEntities->gameEntity.renderEntity.material.color    = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
 
-        //    ++colliders;
-        //}
+        colliderEntities += obstacleCount;
 
-        //for (size_t i = 0; i < skullCount; ++i)
-        //{
-        //    colliders->collider2D   = &(skulls + i)->collider;
-        //    colliders->target       = &(skulls + i)->gameEntity.renderEntity.transform;
+        for (size_t i = 0; i < movingPlatformCount; ++i)
+        {
+            MovingPlatform* movingPlatform = liveMovingPlatforms + i;
 
-        //    setLocalScale(colliders->gameEntity.renderEntity.transform, (skulls + i)->collider.size);
-        //    colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+            colliderEntities->collider2D                                = &movingPlatform->obstacle.collider;
+            colliderEntities->target                                    = &movingPlatform->obstacle.gameEntity.renderEntity.transform;
+            colliderEntities->gameEntity.renderEntity.material.color    = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
 
-        //    ++colliders;
-        //}
+        colliderEntities += movingPlatformCount;
 
-        //for (size_t i = 0; i < mounsCount; ++i)
-        //{
-        //    colliders->collider2D   = &(mounsList + i)->collider;
-        //    colliders->target       = &(mounsList + i)->gameEntity.renderEntity.transform;
+        for (size_t i = 0; i < skullCount; ++i)
+        {
+            Skull* skull = liveSkulls + i;
 
-        //    setLocalScale(colliders->gameEntity.renderEntity.transform, (mounsList + i)->collider.size);
-        //    colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+            colliderEntities->collider2D                                = &skull->collider;
+            colliderEntities->target                                    = &skull->gameEntity.renderEntity.transform;
+            colliderEntities->gameEntity.renderEntity.material.color    = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
 
-        //    ++colliders;
-        //}
+        colliderEntities += skullCount;
 
-        //for (size_t i = 0; i < obstacleCount; ++i)
-        //{
-        //    colliders->collider2D   = &(obstacles + i)->collider;
-        //    colliders->target       = &(obstacles + i)->gameEntity.renderEntity.transform;
+        for (size_t i = 0; i < mounsCount; ++i)
+        {
+            Mouns* mouns = liveMouns + i;
 
-        //    setLocalScale(colliders->gameEntity.renderEntity.transform, (obstacles + i)->collider.size);
-        //    colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+            colliderEntities->collider2D                                = &mouns->collider;
+            colliderEntities->target                                    = &mouns->gameEntity.renderEntity.transform;
+            colliderEntities->gameEntity.renderEntity.material.color    = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
 
-        //    ++colliders;
-        //}
+        colliderEntities += mounsCount;
 
-        //for (size_t i = 0; i < movingPlatformCount; ++i)
-        //{
-        //    colliders->collider2D   = &(movingPlatforms + i)->obstacle.collider;
-        //    colliders->target       = &(movingPlatforms + i)->obstacle.gameEntity.renderEntity.transform;
+        for (size_t i = 0; i < playerCount; ++i)
+        {
+            Player* player = livePlayers + i;
 
-        //    setLocalScale(colliders->gameEntity.renderEntity.transform, (movingPlatforms + i)->obstacle.collider.size);
-        //    colliders->gameEntity.renderEntity.material.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+            colliderEntities->collider2D                                = &player->collider;
+            colliderEntities->target                                    = &player->gameEntity.renderEntity.transform;
+            colliderEntities->gameEntity.renderEntity.material.color    = { 0.0f, 1.0f, 0.0f, 1.0f };
+        }
 
-        //    ++colliders;
-        //}
+        colliderEntities += playerCount;
 
-        //// Allocate entity sections
+        // Load entity sections:
 
-        //auto* entitySectionCount = allocator->requestMemory<uint64_t>(0);
+        size_t sectionOffset = reservedByteSize +
+            sizeof(GameMemoryHeader) + sizeof(LevelView) +
+            sizeof(GameMemoryHeader) + colliderCount * sizeof(Collider2DEntity) +
+            sizeof(GameMemoryHeader) + entitySectionCount * sizeof(ZeroXBridge::EntitySection);
 
-        //auto* backgroundEntitySection = allocator->requestMemory<EntitySection>(
-        //    EntitySection{
-        //        .type   = EntitySectionType::BACKGROUND,
-        //        .flags  = EntitySectionFlags::ALLOCATE_BATCH
-        //    }
-        //);
+        auto* backgroundDescriptors = allocator->requestMemoryArray<ZeroXBridge::EntityReadDescriptor>(backgroundCount);
+        for (size_t i = 0; i < backgroundCount; ++i)
+        {
+            (backgroundDescriptors + i)->start = sectionOffset;
 
-        //++(*entitySectionCount);
+            sectionOffset += sizeof(Background);
+        }
 
-        //const size_t spriteCount    = playerCount + skullCount + mounsCount;
-        //auto* spriteEntitySection   = allocator->requestMemory<EntitySection>(EntitySection{
-        //    .type   = EntitySectionType::SPRITE,
-        //    .flags  = EntitySectionFlags::ALLOCATE_BATCH });
+        entitySections[0] = {
+            .type               = EntitySectionType::BACKGROUND,
+            .flags              = EntitySectionFlags::ALLOCATE_BATCH,
+            .readDescriptors    = backgroundDescriptors,
+            .descriptorCount    = backgroundCount
+        };
 
-        //++(*entitySectionCount);
+        const size_t tileSpriteCount = obstacleCount + movingPlatformCount;
+        auto* tiledSpriteDescriptors = allocator->requestMemoryArray<ZeroXBridge::EntityReadDescriptor>(tileSpriteCount);
 
-        //const size_t tiledSpriteCount   = obstacleCount + movingPlatformCount;
-        //auto* tiledSpriteEntitySection  = allocator->requestMemory<EntitySection>(
-        //    EntitySection{
-        //        .type   = EntitySectionType::TILED_SPRITE,
-        //        .flags  = EntitySectionFlags::ALLOCATE_BATCH
-        //    }
-        //);
+        for (size_t i = 0; i < obstacleCount; ++i)
+        {
+            (tiledSpriteDescriptors + i)->start = sectionOffset;
 
-        //++(*entitySectionCount);
+            sectionOffset += sizeof(Obstacle);
+        }
 
-        //auto* colliderEntitySection = allocator->requestMemory<EntitySection>(EntitySection{
-        //    .type   = EntitySectionType::COLLIDER,
-        //    .flags  = EntitySectionFlags::ALLOCATE_BATCH });
+        for (size_t i = 0; i < movingPlatformCount; ++i)
+        {
+            (tiledSpriteDescriptors + obstacleCount + i)->start = sectionOffset;
 
-        //++(*entitySectionCount);
+            sectionOffset += sizeof(MovingPlatform);
+        }
 
-        //auto* backgroundReadDescriptors     = allocator->requestMemoryArray<EntityReadDescriptor>(backgroundCount);
-        //auto* spriteReadDescriptors         = allocator->requestMemoryArray<EntityReadDescriptor>(spriteCount);
-        //auto* tiledSpriteReadDescriptors    = allocator->requestMemoryArray<EntityReadDescriptor>(tiledSpriteCount);
-        //auto* colliderReadDescriptors       = allocator->requestMemoryArray<EntityReadDescriptor>(colliderCount);
+        entitySections[1] = {
+            .type               = EntitySectionType::TILED_SPRITE,
+            .flags              = EntitySectionFlags::ALLOCATE_BATCH,
+            .readDescriptors    = tiledSpriteDescriptors,
+            .descriptorCount    = tileSpriteCount
+        };
 
-        //// Set entity section offsets
+        const size_t spriteCount    = skullCount + mounsCount + playerCount;
+        auto* spriteDescriptors     = allocator->requestMemoryArray<ZeroXBridge::EntityReadDescriptor>(spriteCount);
 
-        //MemoryCursor<16> entityCursor(baseLevelOffset);
+        for (size_t i = 0; i < skullCount; ++i)
+        {
+            (spriteDescriptors + i)->start = sectionOffset;
 
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < backgroundCount; ++i)
-        //{
-        //    *(backgroundReadDescriptors + i) = { .start = entityCursor.getOffset() };
+            sectionOffset += sizeof(Skull);
+        }
 
-        //    entityCursor.step<Background>();
-        //}
+        for (size_t i = 0; i < mounsCount; ++i)
+        {
+            (spriteDescriptors + skullCount + i)->start = sectionOffset;
 
-        //backgroundEntitySection->readDescriptors = backgroundReadDescriptors;
-        //backgroundEntitySection->descriptorCount = backgroundCount;
+            sectionOffset += sizeof(Mouns);
+        }
 
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < playerCount; ++i)
-        //{
-        //    *(spriteReadDescriptors + i) = { .start = entityCursor.getOffset() };
+        for (size_t i = 0; i < playerCount; ++i)
+        {
+            (spriteDescriptors + mounsCount + skullCount + i)->start = sectionOffset;
 
-        //    entityCursor.step<Player>();
-        //}
+            sectionOffset += sizeof(Player);
+        }
 
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < skullCount; ++i)
-        //{
-        //    *(spriteReadDescriptors + playerCount + i) = { .start = entityCursor.getOffset() };
+        entitySections[2] = {
+            .type               = EntitySectionType::SPRITE,
+            .flags              = EntitySectionFlags::ALLOCATE_BATCH,
+            .readDescriptors    = spriteDescriptors,
+            .descriptorCount    = spriteCount
+        };
 
-        //    entityCursor.step<Skull>();
-        //}
+        sectionOffset += sizeof(GameMemoryHeader);
 
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < mounsCount; ++i)
-        //{
-        //    *(spriteReadDescriptors + playerCount + skullCount + i) = { .start = entityCursor.getOffset() };
+        auto* colliderDescriptors = allocator->requestMemoryArray<ZeroXBridge::EntityReadDescriptor>(colliderCount);
+        for (size_t i = 0; i < colliderCount; ++i)
+        {
+            (colliderDescriptors + i)->start = sectionOffset;
 
-        //    entityCursor.step<Mouns>();
-        //}
+            sectionOffset += sizeof(Collider2DEntity);
+        }
 
-        //spriteEntitySection->readDescriptors = spriteReadDescriptors;
-        //spriteEntitySection->descriptorCount = spriteCount;
-
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < obstacleCount; ++i)
-        //{
-        //    *(tiledSpriteReadDescriptors + i) = { .start = entityCursor.getOffset() };
-
-        //    entityCursor.step<Obstacle>();
-        //}
-
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < movingPlatformCount; ++i)
-        //{
-        //    *(tiledSpriteReadDescriptors + obstacleCount + i) = { .start = entityCursor.getOffset() };
-
-        //    entityCursor.step<MovingPlatform>();
-        //}
-
-        //tiledSpriteEntitySection->readDescriptors = tiledSpriteReadDescriptors;
-        //tiledSpriteEntitySection->descriptorCount = tiledSpriteCount;
-
-        //entityCursor.step<uint64_t>();
-        //for (size_t i = 0; i < colliderCount; ++i)
-        //{
-        //    *(colliderReadDescriptors + i) = { .start = entityCursor.getOffset() };
-
-        //    entityCursor.step<Collider2DEntity>();
-        //}
-
-        //colliderEntitySection->readDescriptors = colliderReadDescriptors;
-        //colliderEntitySection->descriptorCount = colliderCount;
+        entitySections[3] = {
+            .type               = EntitySectionType::COLLIDER,
+            .flags              = EntitySectionFlags::ALLOCATE_BATCH,
+            .readDescriptors    = colliderDescriptors,
+            .descriptorCount    = colliderCount
+        };
 
         return true;
     }
@@ -534,20 +535,16 @@ namespace ZeroXGame
 
     RenderDescriptor initializeRenderDescriptor(const GameAllocator* allocator)
     {
-        return { };
+        unsigned char* allocatorStart = reinterpret_cast<unsigned char*>(allocator->peek());
 
-        /*GameMemory gameMemory = readGameMemory(allocator);
-        
-        const size_t entitySectionCount = *( gameMemory.entitySectionCount.data() );
+        const GameMemoryView gameMemory = readGameMemory(allocatorStart);
+        const LiveMemoryView liveMemory = readLiveMemory(allocatorStart + getReservedByteSize(gameMemory));
 
-        if (entitySectionCount == 0)
-        {
-            return { };
-        }
+        const auto entitySections = liveMemory.entitySections;
 
         return {
-            .entitySections     = reinterpret_cast<EntitySection*>(gameMemory.entitySectionSpan.data()),
-            .entitySectionCount = entitySectionCount
-        };*/
+            .entitySections     = entitySections.data(),
+            .entitySectionCount = static_cast<uint64_t>(entitySections.size())
+        };
     }
 }

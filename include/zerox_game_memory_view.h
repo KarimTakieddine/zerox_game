@@ -40,7 +40,7 @@ namespace ZeroXGame
 	{
 		std::span<LevelView> level;
 		std::span<Collider2DEntity> colliderEntities;
-		std::span<ZeroXBridge::RenderDescriptor> renderDescriptors;
+		std::span<ZeroXBridge::EntitySection> entitySections;
 	};
 
 	inline constexpr size_t getByteSize(const LevelView* level)

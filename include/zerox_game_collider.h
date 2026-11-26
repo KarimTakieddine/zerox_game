@@ -20,11 +20,4 @@ namespace ZeroXGame
 		Collider2D* collider2D			{ nullptr };
 		ZeroXBridge::Transform* target	{ nullptr };
 	};
-
-	//inline void updateCollider(Collider* collider)
-	//{
-	//	collider->gameEntity.renderEntity.transform = *collider->target;
-
-	//	// TODO(Karim): Account for offset!
-	//}
 }

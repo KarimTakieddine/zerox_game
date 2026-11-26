@@ -53,7 +53,7 @@ namespace ZeroXGame
 		return {
 			.level				= ::readMemoryBlock<LevelView>(data, &offset),
 			.colliderEntities	= ::readMemoryBlock<Collider2DEntity>(data, &offset),
-			.renderDescriptors	= ::readMemoryBlock<ZeroXBridge::RenderDescriptor>(data, &offset)
+			.entitySections		= ::readMemoryBlock<ZeroXBridge::EntitySection>(data, &offset)
 		};
 	}
 }
